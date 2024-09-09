@@ -80,3 +80,9 @@ sudo systemctl enable docker
 sudo systemctl start docker
 curl -sSf https://raw.githubusercontent.com/quadratichq/quadratic-selfhost/main/init.sh -o init.sh && bash -i init.sh
 ```
+## Configuring SSL with AWS Cloudformation deployment
+* When using the cloud formation template configure a domain or subdomain that you own and can create `A` DNS records in. For example with a subdomain
+`quadratic.example.com`
+* Run the CloudFormation template and put in your license key and domain (or subdomain)
+* Once the Template runs, go to outputs and copy the InstancePublicIp
+* Create an `A` record `*.quadratic.example.com` where you prefix `*.` with the domain you configured Quadratic with.
