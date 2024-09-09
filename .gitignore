@@ -1,0 +1,6 @@
+docker/caddy/certs
+docker/file-storage
+docker/localstack/data
+docker/mysql/data
+docker/postgres/data
+docker/redis/data
