@@ -48,8 +48,8 @@ checkout() {
 LICENSE_KEY=""
 HOST=""
 
-if [ -f "quadratic/LICENSE" ]; then
-  LICENSE_KEY=$(<quadratic/LICENSE)
+if [ -f "quadratic/LICENSE_KEY" ]; then
+  LICENSE_KEY=$(<quadratic/LICENSE_KEY)
 elif [ $1 ]; then
   LICENSE_KEY=$1
 else
@@ -68,8 +68,8 @@ fi
 checkout
 
 # write license key to LICENSE file
-touch LICENSE
-echo $LICENSE_KEY > LICENSE
+touch LICENSE_KEY
+echo $LICENSE_KEY > LICENSE_KEY
 
 # write host to HOST file
 touch HOST
@@ -82,8 +82,10 @@ rm init.sh
 sed -i.bak "s/#LICENSE_KEY#/$LICENSE_KEY/g" "docker-compose.yml"
 sed -i.bak "s/#HOST#/$HOST/g" "docker-compose.yml"
 sed -i.bak "s/#HOST#/$HOST/g" "docker/ory-auth/config/kratos.yml"
+sed -i.bak "s/#HOST#/$HOST/g" "docker/caddy/config/Caddyfile"
 
 rm docker-compose.yml.bak
 rm docker/ory-auth/config/kratos.yml.bak
+rm docker/caddy/config/Caddyfile.bak
 
 sh start.sh

@@ -5,12 +5,12 @@ dsn: memory
 
 serve:
   public:
-    base_url: http://#HOST#:4433/
+    base_url: https://ory.#HOST#/
     cors:
       enabled: true
       allowed_origins:
-        - http://#HOST#
-        - http://#HOST#:3000
+        - https://#HOST#
+        - https://#HOST#:3000
       allowed_methods:
         - POST
         - GET
@@ -29,12 +29,12 @@ serve:
     base_url: http://kratos:4434/
 
 selfservice:
-  default_browser_return_url: http://#HOST#
+  default_browser_return_url: https://#HOST#
   allowed_return_urls:
-    - http://#HOST#
-    - http://#HOST#:4455
-    - http://#HOST#:3000
-    - http://#HOST#:19006/Callback
+    - https://#HOST#
+    - https://ory-node.#HOST#
+    - https://#HOST#:3000
+    - https://#HOST#:19006/Callback
     - exp://localhost:8081/--/Callback
 
   methods:
@@ -53,44 +53,44 @@ selfservice:
 
   flows:
     error:
-      ui_url: http://#HOST#:4455/error
+      ui_url: https://ory-node.#HOST#/error
 
     settings:
-      ui_url: http://#HOST#:4455/settings
+      ui_url: https://ory-node.#HOST#/settings
       privileged_session_max_age: 15m
       required_aal: highest_available
 
     recovery:
       enabled: true
-      ui_url: http://#HOST#:4455/recovery
+      ui_url: https://ory-node.#HOST#/recovery
       use: code
 
     verification:
       # we disable verification for self-hosting
       enabled: false
-      ui_url: http://#HOST#:4455/verification
+      ui_url: https://ory-node.#HOST#/verification
       use: code
       after:
-        default_browser_return_url: http://#HOST#/login-result
+        default_browser_return_url: https://#HOST#/login-result
 
     logout:
       after:
-        default_browser_return_url: http://#HOST#:4455/login
+        default_browser_return_url: https://ory-node.#HOST#/login
 
     login:
-      ui_url: http://#HOST#:4455/login
+      ui_url: https://ory-node.#HOST#/login
       lifespan: 10m
 
     registration:
       lifespan: 10m
-      ui_url: http://#HOST#:4455/registration
+      ui_url: https://ory-node.#HOST#/registration
       after:
         password:
-          default_browser_return_url: http://#HOST#/login-result
+          default_browser_return_url: https://#HOST#/login-result
           hooks:
             - hook: session
             - hook: show_verification_ui
-        default_browser_return_url: http://#HOST#/login-result
+        default_browser_return_url: https://#HOST#/login-result
 
 session:
   whoami:
