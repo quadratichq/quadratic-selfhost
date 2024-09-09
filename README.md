@@ -40,7 +40,7 @@ Refer to the [Stopping](#Stopping) section.
 Once the Quadratic is initialized, a single command is needed to start all of the images:
 
 ```shell
-./quadratic/self-hosting/start.sh
+./start.sh
 ```
 
 ## Stopping
@@ -50,7 +50,7 @@ To stop running docker images, simply press `ctrl + c` if running in the foregro
 If running in the background, run the `stop.sh` script:
 
 ```shell
-./quadratic/self-hosting/stop.sh
+./stop.sh
 ```
 
 ## Creating an EC2 Instance
