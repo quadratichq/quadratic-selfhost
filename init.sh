@@ -99,33 +99,33 @@ else
   HOST=$(get_host)
 fi
 
-# # retrieve the code from github
-# checkout
+# retrieve the code from github
+checkout
 
-# # write license key to LICENSE file
-# touch LICENSE_KEY
-# echo $LICENSE_KEY > LICENSE_KEY
+# write license key to LICENSE file
+touch LICENSE_KEY
+echo $LICENSE_KEY > LICENSE_KEY
 
 # write docker compose profile to PROFILE file
 PROFILE=$(parse_profile)
 touch PROFILE
 echo $PROFILE > PROFILE
 
-# # write host to HOST file
-# touch HOST
-# echo $HOST > HOST
+# write host to HOST file
+touch HOST
+echo $HOST > HOST
 
-# # remove the init.sh script
-# rm init.sh
+# remove the init.sh script
+rm init.sh
 
-# # adding .bak for compatibility with both GNU (Linux) and BSD (MacOS) sed
-# sed -i.bak "s/#LICENSE_KEY#/$LICENSE_KEY/g" ".env"
-# sed -i.bak "s/#HOST#/$HOST/g" ".env"
-# sed -i.bak "s/#HOST#/$HOST/g" "docker/ory-auth/config/kratos.yml"
-# sed -i.bak "s/#HOST#/$HOST/g" "docker/caddy/config/Caddyfile"
+# adding .bak for compatibility with both GNU (Linux) and BSD (MacOS) sed
+sed -i.bak "s/#LICENSE_KEY#/$LICENSE_KEY/g" ".env"
+sed -i.bak "s/#HOST#/$HOST/g" ".env"
+sed -i.bak "s/#HOST#/$HOST/g" "docker/ory-auth/config/kratos.yml"
+sed -i.bak "s/#HOST#/$HOST/g" "docker/caddy/config/Caddyfile"
 
-# rm .env.bak
-# rm docker/ory-auth/config/kratos.yml.bak
-# rm docker/caddy/config/Caddyfile.bak
+rm .env.bak
+rm docker/ory-auth/config/kratos.yml.bak
+rm docker/caddy/config/Caddyfile.bak
 
-# sh start.sh
+sh start.sh
