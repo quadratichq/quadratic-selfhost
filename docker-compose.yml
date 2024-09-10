@@ -13,7 +13,7 @@ services:
     volumes:
       - ./docker/redis/data:/data
     profiles:
-      - base
+      - pubsub
 
   postgres:
     image: postgres:15
@@ -34,7 +34,7 @@ services:
       - ./docker/postgres/data:/var/lib/postgresql/data
       - ./docker/postgres/scripts:/docker-entrypoint-initdb.d
     profiles:
-      - base
+      - database
 
   caddy:
     image: caddy:latest
@@ -47,7 +47,6 @@ services:
       # - ./docker/caddy/quadratic-client/html:/srv
     profiles:
       - caddy
-      - frontend
     networks:
       - host
     extra_hosts:
@@ -58,11 +57,11 @@ services:
     restart: "always"
     environment:
       VITE_DEBUG: 1
-      VITE_QUADRATIC_API_URL: https://api.#HOST#
-      VITE_QUADRATIC_MULTIPLAYER_URL: wss://multiplayer.#HOST#/ws
-      VITE_QUADRATIC_CONNECTION_URL: https://connection.#HOST#
-      VITE_AUTH_TYPE: ory
-      VITE_ORY_HOST: https://ory.#HOST#
+      VITE_QUADRATIC_API_URL: ${QUADRATIC_API_URL_EXTERNAL}
+      VITE_QUADRATIC_MULTIPLAYER_URL: ${QUADRATIC_MULTIPLAYER_URL_EXTERNAL}
+      VITE_QUADRATIC_CONNECTION_URL: ${QUADRATIC_CONNECTION_URL_EXTERNAL}
+      VITE_AUTH_TYPE: ${AUTH_TYPE}
+      VITE_ORY_HOST: ${KRATOS_URL_EXTERNAL}
     ports:
       - "3000:80"
     command: >
@@ -78,7 +77,6 @@ services:
       # - ./docker/client/build:/usr/share/nginx/html
     profiles:
       - client
-      - frontend
     networks:
       - host
     extra_hosts:
@@ -88,28 +86,20 @@ services:
     image: public.ecr.aws/l3i4i9z2/quadratic-api-staging:latest
     environment:
       CORS: "*"
-      DATABASE_URL: "postgresql://postgres:postgres@host.docker.internal:5432/postgres"
-      ENVIRONMENT: docker
-      STRIPE_SECRET_KEY: STRIPE_SECRET_KEY
-      STRIPE_WEBHOOK_SECRET: STRIPE_WEBHOOK_SECRET
-      OPENAI_API_KEY:
-      M2M_AUTH_TOKEN: M2M_AUTH_TOKEN
-
-      # Hex string to be used as the key for enctyption, use npm run key:generate
-      ENCRYPTION_KEY: eb4758047f74bdb2603cce75c4370327ca2c3662c4786867659126da8e64dfcc
-
-      # Auth
-      AUTH_TYPE: ory
-      ORY_JWKS_URI: "http://host.docker.internal:3000/.well-known/jwks.json"
-      ORY_ADMIN_HOST: http://host.docker.internal:4434
-
-      # Storage
-      STORAGE_TYPE: file-system
-      QUADRATIC_FILE_URI: http://host.docker.internal:3002
-      QUADRATIC_FILE_URI_PUBLIC: https://files.#HOST#
-
-      # License UUID: leave "#LICENSE_KEY#" as this value is replaced during initialization
-      LICENSE_KEY: "#LICENSE_KEY#"
+      DATABASE_URL: ${DATABASE_DSN}
+      ENVIRONMENT: ${ENVIRONMENT}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      M2M_AUTH_TOKEN: ${M2M_AUTH_TOKEN}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      AUTH_TYPE: ${AUTH_TYPE}
+      ORY_JWKS_URI: ${JWKS_URI}
+      ORY_ADMIN_HOST: ${ORY_ADMIN_HOST}
+      STORAGE_TYPE: ${STORAGE_TYPE}
+      QUADRATIC_FILE_URI: ${QUADRATIC_FILE_URL_INTERNAL}
+      QUADRATIC_FILE_URI_PUBLIC: ${QUADRATIC_FILE_URL_EXTERNAL}
+      LICENSE_KEY: ${LICENSE_KEY}
     restart: "always"
     ports:
       - "8000:8000"
@@ -118,8 +108,7 @@ services:
       postgres:
         condition: service_healthy
     profiles:
-      - api
-      - frontend
+      - quadratic_api
     networks:
       - host
     extra_hosts:
@@ -133,16 +122,14 @@ services:
       PORT: 3001
       HEARTBEAT_CHECK_S: 3
       HEARTBEAT_TIMEOUT_S: 600
-      QUADRATIC_API_URI: http://host.docker.internal:8000
-      M2M_AUTH_TOKEN: M2M_AUTH_TOKEN
-      ENVIRONMENT: docker
-
-      PUBSUB_HOST: host.docker.internal
-      PUBSUB_PORT: 6379
-      PUBSUB_PASSWORD: ""
-      PUBSUB_ACTIVE_CHANNELS: active_channels
-
-      AUTH0_JWKS_URI: http://host.docker.internal:3000/.well-known/jwks.json
+      QUADRATIC_API_URI: ${QUADRATIC_API_URL_INTERNAL}
+      M2M_AUTH_TOKEN: ${M2M_AUTH_TOKEN}
+      ENVIRONMENT: ${ENVIRONMENT}
+      PUBSUB_HOST: ${PUBSUB_HOST}
+      PUBSUB_PORT: ${PUBSUB_PORT}
+      PUBSUB_PASSWORD: ${PUBSUB_PASSWORD}
+      PUBSUB_ACTIVE_CHANNELS: ${PUBSUB_ACTIVE_CHANNELS}
+      AUTH0_JWKS_URI: ${JWKS_URI}
       AUTHENTICATE_JWT: true
     restart: "always"
     ports:
@@ -157,8 +144,7 @@ services:
       quadratic-client:
         condition: service_healthy
     profiles:
-      - backend
-      - multiplayer
+      - quadratic_multiplayer
     networks:
       - host
     extra_hosts:
@@ -167,38 +153,29 @@ services:
   quadratic-files:
     image: public.ecr.aws/l3i4i9z2/quadratic-files-staging:latest
     environment:
-      RUST_LOG: info
-      HOST: 0.0.0.0
-      PORT: 3002
-      FILE_CHECK_S: 5
-      FILES_PER_CHECK: 1000
-      TRUNCATE_FILE_CHECK_S: 60
-      TRUNCATE_TRANSACTION_AGE_DAYS: 5 #
-      ENVIRONMENT: docker
-
-      AUTH0_JWKS_URI: http://host.docker.internal:3000/.well-known/jwks.json
-      QUADRATIC_API_URI: http://host.docker.internal:8000
-      M2M_AUTH_TOKEN: M2M_AUTH_TOKEN
-
-      PUBSUB_HOST: host.docker.internal
-      PUBSUB_PORT: 6379
-      PUBSUB_PASSWORD: ""
-      PUBSUB_ACTIVE_CHANNELS: active_channels
-      PUBSUB_PROCESSED_TRANSACTIONS_CHANNEL: processed_transactions
-
-      # Storage
-      STORAGE_TYPE: file-system # s3 or file-system
-
-      # Storage: s3
-      AWS_S3_REGION:
-      AWS_S3_BUCKET_NAME: quadratic-api-docker
-      AWS_S3_ACCESS_KEY_ID:
-      AWS_S3_SECRET_ACCESS_KEY:
-
-      # Storage: file-system
-      STORAGE_DIR: /file-storage
-      STORAGE_ENCRYPTION_KEYS: eb4758047f74bdb2603cce75c4370327ca2c3662c4786867659126da8e64dfcc
-
+      RUST_LOG: ${QUADRATIC_FILES_RUST_LOG}
+      HOST: ${QUADRATIC_FILES_HOST}
+      PORT: ${QUADRATIC_FILES_PORT}
+      FILE_CHECK_S: ${QUADRATIC_FILES_FILE_CHECK_S}
+      FILES_PER_CHECK: ${QUADRATIC_FILES_FILES_PER_CHECK}
+      TRUNCATE_FILE_CHECK_S: ${QUADRATIC_FILES_TRUNCATE_FILE_CHECK_S}
+      TRUNCATE_TRANSACTION_AGE_DAYS: ${QUADRATIC_FILES_TRUNCATE_TRANSACTION_AGE_DAYS}
+      ENVIRONMENT: ${ENVIRONMENT}
+      AUTH0_JWKS_URI: ${JWKS_URI}
+      QUADRATIC_API_URI: ${QUADRATIC_API_URL_INTERNAL}
+      M2M_AUTH_TOKEN: ${M2M_AUTH_TOKEN}
+      PUBSUB_HOST: ${PUBSUB_HOST}
+      PUBSUB_PORT: ${PUBSUB_PORT}
+      PUBSUB_PASSWORD: ${PUBSUB_PASSWORD}
+      PUBSUB_ACTIVE_CHANNELS: ${PUBSUB_ACTIVE_CHANNELS}
+      PUBSUB_PROCESSED_TRANSACTIONS_CHANNEL: ${PUBSUB_PROCESSED_TRANSACTIONS_CHANNEL}
+      STORAGE_TYPE: ${STORAGE_TYPE}
+      AWS_S3_REGION: ${AWS_S3_REGION}
+      AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME}
+      AWS_S3_ACCESS_KEY_ID: ${AWS_S3_ACCESS_KEY_ID}
+      AWS_S3_SECRET_ACCESS_KEY: ${AWS_S3_SECRET_ACCESS_KEY}
+      STORAGE_DIR: ${STORAGE_DIR}
+      STORAGE_ENCRYPTION_KEYS: ${ENCRYPTION_KEY}
     restart: "always"
     ports:
       - "3002:3002"
@@ -214,8 +191,7 @@ services:
     volumes:
       - ./docker/file-storage:/file-storage
     profiles:
-      - backend
-      - files
+      - quadratic_files
     networks:
       - host
     extra_hosts:
@@ -224,17 +200,15 @@ services:
   quadratic-connection:
     image: public.ecr.aws/l3i4i9z2/quadratic-connection-staging:latest
     environment:
-      RUST_LOG: info
-      HOST: 0.0.0.0
-      PORT: 3003
-      ENVIRONMENT: docker
-
-      AUTH0_JWKS_URI: http://host.docker.internal:3000/.well-known/jwks.json
-      QUADRATIC_API_URI: http://host.docker.internal:8000
-      M2M_AUTH_TOKEN: M2M_AUTH_TOKEN
-      MAX_RESPONSE_BYTES: 15728640 # 15MB
-      STATIC_IPS: 0.0.0.0,127.0.0.1
-
+      RUST_LOG: ${QUADRATIC_CONNECTION_RUST_LOG}
+      HOST: ${QUADRATIC_CONNECTION_HOST}
+      PORT: ${QUADRATIC_CONNECTION_PORT}
+      ENVIRONMENT: ${ENVIRONMENT}
+      AUTH0_JWKS_URI: ${JWKS_URI}
+      QUADRATIC_API_URI: ${QUADRATIC_API_URL_INTERNAL}
+      M2M_AUTH_TOKEN: ${M2M_AUTH_TOKEN}
+      MAX_RESPONSE_BYTES: ${QUADRATIC_CONNECTION_MAX_RESPONSE_BYTES}
+      STATIC_IPS: ${QUADRATIC_CONNECTION_STATIC_IPS}
     restart: "always"
     ports:
       - "3003:3003"
@@ -244,8 +218,7 @@ services:
       quadratic-client:
         condition: service_healthy
     profiles:
-      - backend
-      - connection
+      - quadratic_connection
     networks:
       - host
     extra_hosts:
@@ -262,8 +235,8 @@ services:
     volumes:
       - ./docker/ory-auth/config:/etc/config/kratos
     environment:
-      DSN: postgresql://postgres:postgres@host.docker.internal:5432/kratos?sslmode=disable
-      LOG_LEVEL: trace
+      DSN: ${ORY_DSN}
+      LOG_LEVEL: ${ORY_LOG_LEVEL}
     restart: unless-stopped
     depends_on:
       - postgres
@@ -281,7 +254,7 @@ services:
     volumes:
       - ./docker/ory-auth/config:/etc/config/kratos
     environment:
-      DSN: postgresql://postgres:postgres@host.docker.internal:5432/kratos?sslmode=disable
+      DSN: ${ORY_DSN}
     restart: on-failure
     depends_on:
       - postgres
@@ -297,12 +270,12 @@ services:
     ports:
       - "4455:4455"
     environment:
-      PORT: 4455
-      KRATOS_PUBLIC_URL: http://host.docker.internal:4433/
-      KRATOS_BROWSER_URL: https://ory.#HOST#/
-      COOKIE_SECRET: changeme
-      CSRF_COOKIE_NAME: __HOST-#HOST#-x-csrf-token
-      CSRF_COOKIE_SECRET: changeme
+      PORT: ${KRATOS_NODE_PORT}
+      KRATOS_PUBLIC_URL: ${KRATOS_URL_INTERNAL}
+      KRATOS_BROWSER_URL: ${KRATOS_URL_EXTERNAL}
+      COOKIE_SECRET: ${KRATOS_COOKIE_SECRET}
+      CSRF_COOKIE_NAME: ${KRATOS_CSRF_COOKIE_NAME}
+      CSRF_COOKIE_SECRET: ${KRATOS_CSRF_COOKIE_SECRET}
     restart: on-failure
     profiles:
       - ory
