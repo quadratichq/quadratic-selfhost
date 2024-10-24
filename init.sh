@@ -19,12 +19,12 @@
 
 # automatically export all variables
 set -a
-source .env
+[[ -f "quadratic-selfhost/.env" ]] && source quadratic-selfhost/.env
 # disable auto export
 set +a
 
 REPO="https://github.com/quadratichq/quadratic-selfhost.git"
-SELF_HOSTING_URI="https://selfhost.quadratic-preview.com"
+SELF_HOSTING_URI="https://selfhost.quadratichq.com/"
 INVALID_LICENSE_KEY="Invalid license key."
 PROFILE=""
 LICENSE_KEY=""
@@ -59,6 +59,8 @@ parse_profile() {
     "QUADRATIC_API_IN_DOCKER_COMPOSE"
     "QUADRATIC_MULTIPLAYER_IN_DOCKER_COMPOSE"
     "QUADRATIC_FILES_IN_DOCKER_COMPOSE"
+    "QUADRATIC_FILES_URL_INTERNAL"
+    "QUADRATIC_FILES_URL_EXTERNAL"
     "QUADRATIC_CONNECTION_IN_DOCKER_COMPOSE"
   )
 
@@ -83,16 +85,16 @@ checkout() {
 }
 
 
-if [ -f "quadratic/LICENSE_KEY" ]; then
-  LICENSE_KEY=$(<quadratic/LICENSE_KEY)
+if [ -f "quadratic-selfhost/LICENSE_KEY" ]; then
+  LICENSE_KEY=$(<quadratic-selfhost/LICENSE_KEY)
 elif [ $1 ]; then
   LICENSE_KEY=$1
 else
   LICENSE_KEY=$(get_license_key)
 fi
 
-if [ -f "quadratic/HOST" ]; then
-  HOST=$(<quadratic/HOST)
+if [ -f "quadratic-selfhost/HOST" ]; then
+  HOST=$(<quadratic-selfhost/HOST)
 elif [ $2 ]; then
   HOST=$2
 else
@@ -116,7 +118,7 @@ touch HOST
 echo $HOST > HOST
 
 # remove the init.sh script
-rm init.sh
+rm ../init.sh
 
 # adding .bak for compatibility with both GNU (Linux) and BSD (MacOS) sed
 sed -i.bak "s/#LICENSE_KEY#/$LICENSE_KEY/g" ".env"
