@@ -4,3 +4,6 @@ docker/localstack/data
 docker/mysql/data
 docker/postgres/data
 docker/redis/data
+
+HOST
+LICENSE_KEY
