@@ -4,9 +4,9 @@
 PROFILE=$(cat PROFILE)
 
 start() {
-  docker compose "$PROFILE" down
+  docker compose $PROFILE down
   yes | docker compose rm quadratic-client
-  docker compose "$PROFILE" up -d
+  docker compose $PROFILE up -d
 }
 
 start
