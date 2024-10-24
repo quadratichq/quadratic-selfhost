@@ -17,12 +17,6 @@
 # If not, then check for the first command line argument, if so, use that host.
 # Else, prompt the user.
 
-# automatically export all variables
-set -a
-[[ -f "quadratic-selfhost/.env" ]] && source quadratic-selfhost/.env
-# disable auto export
-set +a
-
 REPO="https://github.com/quadratichq/quadratic-selfhost.git"
 SELF_HOSTING_URI="https://selfhost.quadratichq.com/"
 INVALID_LICENSE_KEY="Invalid license key."
@@ -49,6 +43,12 @@ get_host() {
 }
 
 parse_profile() {
+  # automatically export all variables
+  set -a
+  [[ -f ".env" ]] && source .env
+  # disable auto export
+  set +a
+
   values=()
   variables=(
     "DATABASE_IN_DOCKER_COMPOSE"
