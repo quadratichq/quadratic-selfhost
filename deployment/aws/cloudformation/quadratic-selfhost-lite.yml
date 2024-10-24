@@ -70,7 +70,7 @@ Mappings:
 Parameters:
   LicenseKey:
     Type: String
-    Description: "Your license key for Quadratic. Get one here https://selfhost.quadratic-preview.com/"
+    Description: "Your license key for Quadratic. Get one here https://selfhost.quadratichq.com/"
   DomainName:
     Type: String
     Description: "The domain name you want to host your Quadratic instance (e.g., quadratic.example.com)"
