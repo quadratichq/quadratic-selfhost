@@ -141,7 +141,7 @@ services:
         condition: service_healthy
       quadratic-api:
         condition: service_started
-      quadratic-client:
+      caddy:
         condition: service_healthy
     profiles:
       - quadratic_multiplayer
@@ -215,8 +215,6 @@ services:
     depends_on:
       caddy:
         condition: service_started
-      quadratic-client:
-        condition: service_healthy
     profiles:
       - quadratic_connection
     networks:
