@@ -76,7 +76,7 @@ services:
       - ./docker/client/config/default.conf:/etc/nginx/conf.d/default.conf
       # - ./docker/client/build:/usr/share/nginx/html
     profiles:
-      - client
+      - quadratic_client
     networks:
       - host
     extra_hosts:
@@ -141,7 +141,7 @@ services:
         condition: service_healthy
       quadratic-api:
         condition: service_started
-      caddy:
+      quadratic-client:
         condition: service_healthy
     profiles:
       - quadratic_multiplayer
@@ -186,7 +186,7 @@ services:
         condition: service_healthy
       quadratic-api:
         condition: service_started
-      caddy:
+      quadratic-client:
         condition: service_healthy
     volumes:
       - ./docker/file-storage:/file-storage
@@ -213,7 +213,7 @@ services:
     ports:
       - "3003:3003"
     depends_on:
-      caddy:
+      quadratic-client:
         condition: service_started
     profiles:
       - quadratic_connection
