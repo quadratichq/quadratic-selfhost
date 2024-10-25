@@ -186,7 +186,7 @@ services:
         condition: service_healthy
       quadratic-api:
         condition: service_started
-      quadratic-client:
+      caddy:
         condition: service_healthy
     volumes:
       - ./docker/file-storage:/file-storage
