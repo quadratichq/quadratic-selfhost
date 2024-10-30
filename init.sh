@@ -36,7 +36,8 @@ get_license_key() {
 }
 
 get_host() {
-    read -p "What public host name or public IP address are you using for this setup (e.g. localhost, app.quadratic.com, or other): " user_input
+    # read -p "What public host name or public IP address are you using for this setup (e.g. localhost, app.quadratic.com, or other): " user_input
+    read -p "What public host name or public IP address are you using for this setup (e.g. company.com, quadratic.company.com, or other): " user_input
     
     # TODO: validate host
     echo $user_input
