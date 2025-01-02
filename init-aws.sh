@@ -24,6 +24,9 @@ PROFILE=""
 LICENSE_KEY=""
 HOST=""
 
+cp docker/ory-auth/config/kratos.aws.yml docker/ory-auth/config/kratos.yml
+cp .env.aws .env
+
 get_license_key() {
     read -p "Enter your license key (Get one for free instantly at $SELF_HOSTING_URI): " user_input
     

@@ -2,17 +2,17 @@ AWSTemplateFormatVersion: "2010-09-09"
 Resources:
   EC2Instance:
     Type: "AWS::EC2::Instance"
-    Properties: 
+    Properties:
       InstanceType: "t2.xlarge"
-      ImageId: !FindInMap [ RegionMap, !Ref "AWS::Region", AMI ]
-      SecurityGroups: 
+      ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
+      SecurityGroups:
         - !Ref OpenSecurityGroup
       BlockDeviceMappings:
         - DeviceName: "/dev/sda1"
           Ebs:
             VolumeSize: "100" # 30 GiB storage size
             VolumeType: "gp3"
-      UserData: 
+      UserData:
         Fn::Base64: !Sub |
           #!/bin/bash
           # Update and install dependencies
@@ -44,7 +44,7 @@ Resources:
           echo "Public IP: $PUBLIC_IP"
 
           # Run the init.sh script with positional arguments: LicenseKey and EC2 public IP
-          curl -sSf https://raw.githubusercontent.com/quadratichq/quadratic-selfhost/main/init.sh -o init.sh && bash -i init.sh $LICENSE_KEY $DOMAIN_NAME
+          curl -sSf https://raw.githubusercontent.com/quadratichq/quadratic-selfhost/main/init-aws.sh -o init.sh && bash -i init.sh $LICENSE_KEY $DOMAIN_NAME
 
   OpenSecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
