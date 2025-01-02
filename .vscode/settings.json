@@ -1,10 +1,16 @@
 {
   "cSpell.words": [
+    "awscli",
+    "awscliv",
     "Caddyfile",
+    "containerd",
+    "dearmor",
+    "dpkg",
     "hashers",
     "healthcheck",
     "initdb",
     "isready",
+    "keyrings",
     "mailslurper",
     "oryd",
     "PGUSER",
@@ -14,6 +20,7 @@
     "smtps",
     "tolower",
     "totp",
+    "usermod",
     "VITE",
     "xchacha"
   ]
