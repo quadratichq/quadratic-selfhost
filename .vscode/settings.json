@@ -1,0 +1,27 @@
+{
+  "cSpell.words": [
+    "awscli",
+    "awscliv",
+    "Caddyfile",
+    "containerd",
+    "dearmor",
+    "dpkg",
+    "hashers",
+    "healthcheck",
+    "initdb",
+    "isready",
+    "keyrings",
+    "mailslurper",
+    "oryd",
+    "PGUSER",
+    "sdaf",
+    "selfhost",
+    "selfservice",
+    "smtps",
+    "tolower",
+    "totp",
+    "usermod",
+    "VITE",
+    "xchacha"
+  ]
+}

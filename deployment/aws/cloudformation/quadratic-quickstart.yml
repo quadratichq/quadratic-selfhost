@@ -2,22 +2,28 @@ AWSTemplateFormatVersion: "2010-09-09"
 Resources:
   EC2Instance:
     Type: "AWS::EC2::Instance"
-    Properties: 
+    Properties:
       InstanceType: "t2.xlarge"
-      ImageId: !FindInMap [ RegionMap, !Ref "AWS::Region", AMI ]
-      SecurityGroups: 
+      ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
+      SecurityGroups:
         - !Ref OpenSecurityGroup
       BlockDeviceMappings:
         - DeviceName: "/dev/sda1"
           Ebs:
             VolumeSize: "100" # 30 GiB storage size
             VolumeType: "gp3"
-      UserData: 
+      UserData:
         Fn::Base64: !Sub |
           #!/bin/bash
           # Update and install dependencies
           sudo apt-get update
-          sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common awscli jq
+          sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common unzip jq awscli
+
+          # Install AWS CLI v2
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
+          rm -rf aws awscliv2.zip
 
           # Install Docker
           curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
@@ -29,22 +35,10 @@ Resources:
           sudo chown ubuntu /var/run/docker.sock
           sudo systemctl enable docker
           sudo systemctl start docker
+          sudo usermod -aG docker ubuntu
 
-          # Get the instance ID and region
-          DOMAIN_NAME=${DomainName}
-
-          # Fetch License Key
-          LICENSE_KEY=${LicenseKey}
-
-          # Get the instance's public IP dynamically
-          PUBLIC_IP=$(curl -s http://checkip.amazonaws.com)
-
-          # Echo the License Key, Public IP, and Public DNS for debugging
-          echo "License Key: $LICENSE_KEY"
-          echo "Public IP: $PUBLIC_IP"
-
-          # Run the init.sh script with positional arguments: LicenseKey and EC2 public IP
-          curl -sSf https://raw.githubusercontent.com/quadratichq/quadratic-selfhost/main/init.sh -o init.sh && bash -i init.sh $LICENSE_KEY $DOMAIN_NAME
+          # Run the init.sh script with positional arguments: LicenseKey and DomainName
+          curl -sSf https://raw.githubusercontent.com/quadratichq/quadratic-selfhost/main/init-aws.sh -o init.sh && bash -i init.sh "${LicenseKey}" "${DomainName}"
 
   OpenSecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
@@ -63,9 +57,9 @@ Resources:
 Mappings:
   RegionMap:
     us-west-2:
-      AMI: "ami-05134c8ef96964280" # Example AMI for us-west-2 (Ubuntu 20.04)
+      AMI: "ami-0b8c6b923777519db" # Example AMI for us-west-2 (Ubuntu 22.04 LTS amd64)
     ap-south-1:
-      AMI: "ami-0522ab6e1ddcc7055" # Example AMI for ap-south-1 (Ubuntu 24.04 LTS)
+      AMI: "ami-0522ab6e1ddcc7055" # Example AMI for ap-south-1 (Ubuntu 24.04 LTS amd64)
 
 Parameters:
   LicenseKey:
