@@ -133,7 +133,7 @@ services:
     image: ${ECR_URL}/quadratic-multiplayer:${IMAGE_TAG}
     container_name: multiplayer
     environment:
-      RUST_LOG: ${RUST_LOG}
+      RUST_LOG: ${QUADRATIC_MULTIPLAYER_RUST_LOG}
       HOST: ${QUADRATIC_MULTIPLAYER_HOST}
       PORT: ${QUADRATIC_MULTIPLAYER_PORT}
       HEARTBEAT_CHECK_S: ${QUADRATIC_MULTIPLAYER_HEARTBEAT_CHECK_S}
@@ -168,7 +168,7 @@ services:
     image: ${ECR_URL}/quadratic-files:${IMAGE_TAG}
     container_name: files
     environment:
-      RUST_LOG: ${RUST_LOG}
+      RUST_LOG: ${QUADRATIC_FILES_RUST_LOG}
       HOST: ${QUADRATIC_FILES_HOST}
       PORT: ${QUADRATIC_FILES_PORT}
       FILE_CHECK_S: ${QUADRATIC_FILES_FILE_CHECK_S}
@@ -214,7 +214,7 @@ services:
     image: ${ECR_URL}/quadratic-connection:${IMAGE_TAG}
     container_name: connection
     environment:
-      RUST_LOG: ${RUST_LOG}
+      RUST_LOG: ${QUADRATIC_CONNECTION_RUST_LOG}
       HOST: ${QUADRATIC_CONNECTION_HOST}
       PORT: ${QUADRATIC_CONNECTION_PORT}
       ENVIRONMENT: ${ENVIRONMENT}
