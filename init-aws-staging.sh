@@ -132,5 +132,3 @@ sed -i.bak "s/#HOST#/$HOST/g" "docker/caddy/config/Caddyfile"
 rm .env.bak
 rm docker/ory-auth/config/kratos.yml.bak
 rm docker/caddy/config/Caddyfile.bak
-
-sh start.sh
