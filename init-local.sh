@@ -41,7 +41,7 @@ touch PROFILE
 echo $PROFILE > PROFILE
 
 # generate a random encryption key
-ENCRYPTION_KEY=$(openssl rand -base64 32)
+ENCRYPTION_KEY=$(generate_random_encryption_key)
 touch ENCRYPTION_KEY
 echo $ENCRYPTION_KEY > ENCRYPTION_KEY
 

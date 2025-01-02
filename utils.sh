@@ -59,3 +59,7 @@ parse_profile() {
 
   echo "${values[@]}" 
 }
+
+generate_random_encryption_key() {
+  openssl rand -hex 32
+}
