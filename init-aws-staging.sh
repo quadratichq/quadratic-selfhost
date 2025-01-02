@@ -24,9 +24,6 @@ PROFILE=""
 LICENSE_KEY=""
 HOST=""
 
-cp docker/ory-auth/config/kratos.aws.yml docker/ory-auth/config/kratos.yml
-cp .env.aws-staging .env
-
 get_license_key() {
     read -p "Enter your license key (Get one for free instantly at $SELF_HOSTING_URI): " user_input
     
@@ -87,7 +84,6 @@ checkout() {
   git checkout
 }
 
-
 if [ -f "quadratic-selfhost/LICENSE_KEY" ]; then
   LICENSE_KEY=$(<quadratic-selfhost/LICENSE_KEY)
 elif [ $1 ]; then
@@ -107,6 +103,10 @@ fi
 # retrieve the code from github
 checkout
 
+# copy the aws staging config files
+cp docker/ory-auth/config/kratos.aws.yml docker/ory-auth/config/kratos.yml
+cp .env.aws-staging .env
+
 # write license key to LICENSE file
 touch LICENSE_KEY
 echo $LICENSE_KEY > LICENSE_KEY
@@ -120,6 +120,11 @@ echo $PROFILE > PROFILE
 touch HOST
 echo $HOST > HOST
 
+# generate a random encryption key
+ENCRYPTION_KEY=$(openssl rand -base64 32)
+touch ENCRYPTION_KEY
+echo $ENCRYPTION_KEY > ENCRYPTION_KEY
+
 # remove the init.sh script
 rm ../init.sh
 
@@ -128,6 +133,7 @@ sed -i.bak "s/#LICENSE_KEY#/$LICENSE_KEY/g" ".env"
 sed -i.bak "s/#HOST#/$HOST/g" ".env"
 sed -i.bak "s/#HOST#/$HOST/g" "docker/ory-auth/config/kratos.yml"
 sed -i.bak "s/#HOST#/$HOST/g" "docker/caddy/config/Caddyfile"
+sed -i.bak "s/#ENCRYPTION_KEY#/$ENCRYPTION_KEY/g" ".env"
 
 rm .env.bak
 rm docker/ory-auth/config/kratos.yml.bak

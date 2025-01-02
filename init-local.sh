@@ -13,9 +13,6 @@ INVALID_LICENSE_KEY="Invalid license key."
 PROFILE=""
 LICENSE_KEY=""
 
-cp docker/ory-auth/config/kratos.local.yml docker/ory-auth/config/kratos.yml
-cp .env.local .env
-
 get_license_key() {
     read -p "Enter your license key (Get one for free instantly at $SELF_HOSTING_URI): " user_input
     
@@ -69,7 +66,6 @@ checkout() {
   git checkout
 }
 
-
 if [ -f "quadratic-selfhost/LICENSE_KEY" ]; then
   LICENSE_KEY=$(<quadratic-selfhost/LICENSE_KEY)
 elif [ $1 ]; then
@@ -81,6 +77,10 @@ fi
 # retrieve the code from github
 checkout
 
+# copy the local config files
+cp docker/ory-auth/config/kratos.local.yml docker/ory-auth/config/kratos.yml
+cp .env.local .env
+
 # write license key to LICENSE file
 touch LICENSE_KEY
 echo $LICENSE_KEY > LICENSE_KEY
@@ -90,11 +90,17 @@ PROFILE=$(parse_profile)
 touch PROFILE
 echo $PROFILE > PROFILE
 
+# generate a random encryption key
+ENCRYPTION_KEY=$(openssl rand -base64 32)
+touch ENCRYPTION_KEY
+echo $ENCRYPTION_KEY > ENCRYPTION_KEY
+
 # remove the init.sh script
 rm ../init.sh
 
 # adding .bak for compatibility with both GNU (Linux) and BSD (MacOS) sed
 sed -i.bak "s/#LICENSE_KEY#/$LICENSE_KEY/g" ".env"
+sed -i.bak "s/#ENCRYPTION_KEY#/$ENCRYPTION_KEY/g" ".env"
 
 rm .env.bak
 
