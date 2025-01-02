@@ -1,5 +1,29 @@
 #!/bin/bash
 
+get_license_key() {
+    read -p "Enter your license key (Get one for free instantly at $SELF_HOSTING_URI): " user_input
+    
+    if [[ $user_input =~ ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$ ]]; then
+      echo $user_input
+    else
+      echo $INVALID_LICENSE_KEY
+      return 1
+    fi
+}
+
+get_host() {
+    read -p "What public host name or public IP address are you using for this setup (e.g. localhost, app.quadratic.com, or other): " user_input
+    
+    # TODO: validate host
+    echo $user_input
+}
+
+checkout() {
+  git clone $REPO
+  cd quadratic-selfhost
+  git checkout
+}
+
 parse_profile() {
   # automatically export all variables
   set -a
