@@ -4,8 +4,8 @@
 PROFILE=$(cat PROFILE)
 
 stop() {
-  # Stop containers, remove volumes and remove images
-  docker compose $PROFILE down --volumes --remove-orphans --rmi all
+  # Stop containers and remove volumes
+  docker compose $PROFILE down --volumes --remove-orphans
 
   # Clear builder cache to avoid using old images and save space
   docker builder prune -af
