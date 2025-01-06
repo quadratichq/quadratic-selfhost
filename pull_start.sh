@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# This script is used to remove the existing containers, volumes, and images, pull the latest images, and start the services
+# This is necessary for use in staging previews where we want to ensure that the latest images are used
+
 # read the value of PROFILE from the file
 PROFILE=$(cat PROFILE)
 
