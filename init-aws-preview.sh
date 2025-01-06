@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Self-Hosting Initialization (for quadratic development staging)
+# Self-Hosting Initialization (for quadratic preview deployment)
 # 
 # Usage:
 # 
-#   ./init-aws-staging.sh 83f0ebdf-eafb-4c8d-bd7b-04ea07d61b7f localhost
+#   ./init-aws-preview.sh 83f0ebdf-eafb-4c8d-bd7b-04ea07d61b7f localhost
 # 
 # 
 # Flow:
@@ -47,9 +47,9 @@ fi
 # retrieve the code from github
 checkout
 
-# copy the aws staging config files
+# copy the aws preview config files
 cp docker/ory-auth/config/kratos.aws.yml docker/ory-auth/config/kratos.yml
-cp .env.aws-staging .env
+cp .env.aws-preview .env
 
 # write license key to LICENSE file
 touch LICENSE_KEY
