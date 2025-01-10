@@ -94,7 +94,7 @@ services:
     image: ${ECR_URL}/quadratic-api:${IMAGE_TAG}
     container_name: api
     environment:
-      CORS: "*"
+      CORS: "${QUADRATIC_API_CORS}"
       DATABASE_URL: ${DATABASE_DSN}
       ENVIRONMENT: ${ENVIRONMENT}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
