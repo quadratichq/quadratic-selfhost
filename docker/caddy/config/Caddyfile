@@ -1,3 +1,8 @@
+{
+  acme_ca https://acme.zerossl.com/v2/DV90
+  email   quadratic@#HOST#
+}
+
 #HOST# {
   reverse_proxy http://host.docker.internal:3000
 }
