@@ -55,4 +55,6 @@ sed -i.bak "s/#ENCRYPTION_KEY#/$ENCRYPTION_KEY/g" ".env"
 
 rm .env.bak
 
+chmod +x docker/postgres/scripts/init.sh
+
 sh start.sh
