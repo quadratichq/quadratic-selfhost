@@ -11,6 +11,8 @@
     "initdb",
     "isready",
     "keyrings",
+    "kratos",
+    "localstack",
     "mailslurper",
     "oryd",
     "PGUSER",
