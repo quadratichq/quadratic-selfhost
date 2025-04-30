@@ -337,6 +337,96 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
+  # databases to be used for testing by the connection service - postgres, mysql, mssql
+
+  postgres-connection:
+    image: postgres:15
+    restart: always
+    container_name: postgres-connection
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: postgres-connection
+      POSTGRES_USER: user
+      PGUSER: user
+      POSTGRES_PASSWORD: password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d postgres-connection"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./docker/postgres-connection/data:/var/lib/postgresql/data
+      - ./docker/postgres-connection/scripts:/docker-entrypoint-initdb.d
+    profiles:
+      - quadratic-connection-db
+      - quadratic-connection-db-postgres
+
+  mysql-connection:
+    image: mysql:8
+    restart: always
+    container_name: mysql-connection
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_DATABASE: mysql-connection
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./docker/mysql-connection/data:/var/lib/mysql
+      - ./docker/mysql-connection/scripts:/docker-entrypoint-initdb.d/
+    profiles:
+      - quadratic-connection-db
+      - quadratic-connection-db-mysql
+
+  mssql-connection:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    restart: always
+    container_name: mssql-connection
+    user: root
+    ports:
+      - 1433:1433
+    environment:
+      ACCEPT_EULA: Y
+      MSSQL_SA_PASSWORD: yourStrong(!)Password
+      MSSQL_PID: Express
+    volumes:
+      - ./docker/mssql-connection/data:/var/opt/mssql
+      - ./docker/mssql-connection/scripts:/docker-entrypoint-initdb.d/
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "/opt/mssql-tools18/bin/sqlcmd",
+          "-S",
+          "localhost",
+          "-U",
+          "sa",
+          "-P",
+          "yourStrong(!)Password",
+          "-Q",
+          "SELECT 1",
+          "-C",
+          "-N",
+          "-t",
+          "30",
+        ]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+    command: >
+      bash -c " /opt/mssql/bin/sqlservr & sleep 10 && /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'yourStrong(!)Password' -i /docker-entrypoint-initdb.d/create_db.sql -C -N -t 30 && /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'yourStrong(!)Password' -i /docker-entrypoint-initdb.d/seed_db.sql -C -N -t 30 && tail -f /dev/null"
+    profiles:
+      - quadratic-connection-db
+      - quadratic-connection-db-mssql
+
 volumes:
   docker:
     name: docker

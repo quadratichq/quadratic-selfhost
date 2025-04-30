@@ -2,7 +2,7 @@
 
 get_license_key() {
     read -p "Enter your license key (Get one for free instantly at $SELF_HOSTING_URI): " user_input
-    
+
     if [[ $user_input =~ ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$ ]]; then
       echo $user_input
     else
@@ -13,7 +13,7 @@ get_license_key() {
 
 get_host() {
     read -p "What public host name or public IP address are you using for this setup (e.g. localhost, app.quadratic.com, or other): " user_input
-    
+
     # TODO: validate host
     echo $user_input
 }
@@ -44,6 +44,7 @@ parse_profile() {
     "QUADRATIC_FILES_URL_INTERNAL"
     "QUADRATIC_FILES_URL_EXTERNAL"
     "QUADRATIC_CONNECTION_IN_DOCKER_COMPOSE"
+    "QUADRATIC_CONNECTION_DB_IN_DOCKER_COMPOSE"
   )
 
   for var_name in "${variables[@]}"; do
@@ -55,9 +56,9 @@ parse_profile() {
       var_name_lower=$(echo "$var_name_stripped" | awk '{print tolower($0)}')
       values+=("--profile ${var_name_lower}")
     fi
-  done  
+  done
 
-  echo "${values[@]}" 
+  echo "${values[@]}"
 }
 
 generate_random_encryption_key() {
