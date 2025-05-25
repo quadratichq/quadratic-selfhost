@@ -40,7 +40,7 @@ compress_js_files() {
     -name "*.tsx" \
   \) -print0 | xargs -0 -n1 -P$(nproc) -I {} sh -c '\
     echo "Compressing: {}" && \
-    brotli -q 12 -w 24 -f "{}" && \
+    brotli -q 11 -w 24 -f "{}" && \
     pigz -9kf "{}" && \
     echo "Created: {}.br and {}.gz" \
   '
