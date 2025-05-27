@@ -368,6 +368,10 @@ services:
     profiles:
       - quadratic_connection_db
       - quadratic_connection_db_postgres
+    networks:
+      - host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   ssh-postgres-connection:
     build:
@@ -393,6 +397,10 @@ services:
     profiles:
       - quadratic_connection_db
       - quadratic_connection_db_postgres_ssh
+    networks:
+      - host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   mysql-connection:
     image: mysql:8
@@ -416,6 +424,10 @@ services:
     profiles:
       - quadratic_connection_db
       - quadratic_connection_db_mysql
+    networks:
+      - host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   ssh-mysql-connection:
     build:
@@ -436,6 +448,10 @@ services:
     profiles:
       - quadratic_connection_db
       - quadratic_connection_db_mysql_ssh
+    networks:
+      - host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   # This service covers non-ssh mssql connections as well since it's a complex build
   ssh-mssql-connection:
@@ -459,6 +475,10 @@ services:
       - quadratic_connection_db
       - quadratic_connection_db_mssql
       - quadratic_connection_db_mssql_ssh
+    networks:
+      - host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 volumes:
   docker:
