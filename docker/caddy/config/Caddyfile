@@ -1,6 +1,7 @@
 {
-  acme_ca https://acme.zerossl.com/v2/DV90
-  email   quadratic@#HOST#
+  email quadratic@#HOST#
+  cert_issuer acme https://acme.zerossl.com/v2/DV90
+  cert_issuer acme https://acme-v02.api.letsencrypt.org/directory
 }
 
 #HOST# {
