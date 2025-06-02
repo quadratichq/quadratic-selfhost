@@ -3,7 +3,7 @@ Resources:
   EC2Instance:
     Type: "AWS::EC2::Instance"
     Properties:
-      InstanceType: "t2.xlarge"
+      InstanceType: "m7a.xlarge"
       ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
       SecurityGroups:
         - !Ref OpenSecurityGroup
@@ -60,6 +60,8 @@ Mappings:
       AMI: "ami-0b8c6b923777519db" # Example AMI for us-west-2 (Ubuntu 22.04 LTS amd64)
     ap-south-1:
       AMI: "ami-0522ab6e1ddcc7055" # Example AMI for ap-south-1 (Ubuntu 24.04 LTS amd64)
+    eu-central-1:
+      AMI: "ami-03250b0e01c28d196" # Example AMI for eu-central-1 (Ubuntu 24.04 LTS amd64)
 
 Parameters:
   LicenseKey:
