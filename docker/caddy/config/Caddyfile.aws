@@ -1,9 +1,3 @@
-{
-  email quadratic@#HOST#
-  cert_issuer acme https://acme.zerossl.com/v2/DV90
-  cert_issuer acme https://acme-v02.api.letsencrypt.org/directory
-}
-
 #HOST# {
   reverse_proxy http://host.docker.internal:3000
 }

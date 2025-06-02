@@ -1,18 +1,18 @@
 #!/bin/bash
 
 # Self-Hosting Initialization
-# 
+#
 # Usage:
-# 
+#
 #   ./init-aws.sh 83f0ebdf-eafb-4c8d-bd7b-04ea07d61b7f localhost
-# 
-# 
+#
+#
 # Flow:
-# 
+#
 # First, check to see if there is a VERSION file, if so, use that version.
 # If not, then check for the first command line argument, if so, use that version.
 # Else, prompt the user.
-# 
+#
 # First, check to see if there is a HOST file, if so, use that host.
 # If not, then check for the first command line argument, if so, use that host.
 # Else, prompt the user.
@@ -49,6 +49,7 @@ checkout
 
 # copy the aws config files
 cp docker/ory-auth/config/kratos.aws.yml docker/ory-auth/config/kratos.yml
+cp docker/caddy/config/Caddyfile.aws docker/caddy/config/Caddyfile
 cp .env.aws .env
 
 # write license key to LICENSE file
