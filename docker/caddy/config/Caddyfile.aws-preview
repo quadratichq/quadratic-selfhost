@@ -1,0 +1,25 @@
+{
+  email quadratic@#HOST#
+  cert_issuer acme https://acme.zerossl.com/v2/DV90
+  cert_issuer acme https://acme-v02.api.letsencrypt.org/directory
+}
+
+#HOST# {
+  reverse_proxy http://host.docker.internal:3000
+}
+
+api.#HOST# {
+  reverse_proxy http://host.docker.internal:8000
+}
+
+multiplayer.#HOST# {
+  reverse_proxy http://host.docker.internal:3001
+}
+
+files.#HOST# {
+  reverse_proxy http://host.docker.internal:3002
+}
+
+connection.#HOST# {
+  reverse_proxy http://host.docker.internal:3003
+}

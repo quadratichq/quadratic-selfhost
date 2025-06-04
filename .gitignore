@@ -5,5 +5,7 @@ docker/mysql/data
 docker/postgres/data
 docker/redis/data
 
+ENCRYPTION_KEY
 HOST
 LICENSE_KEY
+PROFILE

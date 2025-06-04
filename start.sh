@@ -7,11 +7,14 @@ PROFILE=$(cat PROFILE)
 HOST=$(cat HOST)
 
 start() {
-  docker compose $PROFILE down
-  yes | docker compose rm quadratic-client
+  # Stop containers and remove volumes
+  docker compose $PROFILE down --volumes --remove-orphans
+
+  # Start services with new images in detached mode
   docker compose $PROFILE up -d
+
+  # Clear builder cache to avoid using old images and save space
+  docker builder prune -af
 }
 
 start
-
-echo "Quadratic client started on https://$HOST"

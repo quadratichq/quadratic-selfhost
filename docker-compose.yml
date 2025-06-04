@@ -1,8 +1,9 @@
-version: "3.8"
-
 services:
+  # base services - redis, postgres
+
   redis:
     image: redis/redis-stack:latest
+    container_name: redis
     restart: always
     ports:
       - "6379:6379"
@@ -17,6 +18,7 @@ services:
 
   postgres:
     image: postgres:15
+    container_name: postgres
     restart: always
     ports:
       - "5432:5432"
@@ -38,13 +40,13 @@ services:
 
   caddy:
     image: caddy:latest
+    container_name: caddy
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - ./docker/caddy/config/Caddyfile:/etc/caddy/Caddyfile
-      - ./docker/caddy/certs:/data/caddy/pki/authorities/local
-      # - ./docker/caddy/quadratic-client/html:/srv
+      - ./docker/caddy/data:/data/caddy
     profiles:
       - caddy
     networks:
@@ -52,30 +54,44 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
+  # quadratic services - client, api, multiplayer, files, connection
+
   quadratic-client:
-    image: public.ecr.aws/z7e3d4w1/quadratic-client:latest
-    restart: "always"
+    image: ${ECR_URL}/quadratic-client:${IMAGE_TAG}
+    container_name: client
     environment:
       VITE_DEBUG: 1
       VITE_QUADRATIC_API_URL: ${QUADRATIC_API_URL_EXTERNAL}
       VITE_QUADRATIC_MULTIPLAYER_URL: ${QUADRATIC_MULTIPLAYER_URL_EXTERNAL}
       VITE_QUADRATIC_CONNECTION_URL: ${QUADRATIC_CONNECTION_URL_EXTERNAL}
+      VITE_STORAGE_TYPE: ${STORAGE_TYPE}
       VITE_AUTH_TYPE: ${AUTH_TYPE}
+      VITE_AUTH0_ISSUER: ${AUTH0_ISSUER}
+      VITE_AUTH0_DOMAIN: ${VITE_AUTH0_DOMAIN}
+      VITE_AUTH0_CLIENT_ID: ${VITE_AUTH0_CLIENT_ID}
+      VITE_AUTH0_AUDIENCE: ${AUTH0_AUDIENCE}
       VITE_ORY_HOST: ${KRATOS_URL_EXTERNAL}
     ports:
       - "3000:80"
+    entrypoint: []
     command: >
-      sh -c "/client/scripts/replace_env_vars.sh &&
-            nginx -g \"daemon off;\""
+      /bin/sh -c "/client/scripts/replace_env_vars.sh && nginx -g \"daemon off;\""
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://host.docker.internal:3000/ || exit 1"]
+      start_period: 10s
       interval: 10s
       timeout: 5s
+      retries: 10
+    restart: "always"
     volumes:
       - ./docker/client:/client
+      - ./docker/client/config/nginx.conf:/etc/nginx/nginx.conf
       - ./docker/client/config/default.conf:/etc/nginx/conf.d/default.conf
-      # - ./docker/client/build:/usr/share/nginx/html
+    depends_on:
+      quadratic-api:
+        condition: service_started
     profiles:
+      - quadratic
       - quadratic_client
     networks:
       - host
@@ -83,23 +99,47 @@ services:
       - "host.docker.internal:host-gateway"
 
   quadratic-api:
-    image: public.ecr.aws/z7e3d4w1/quadratic-api:latest
+    image: ${ECR_URL}/quadratic-api:${IMAGE_TAG}
+    container_name: api
     environment:
-      CORS: "*"
-      DATABASE_URL: ${DATABASE_DSN}
       ENVIRONMENT: ${ENVIRONMENT}
+      CORS: "${QUADRATIC_API_CORS}"
+      NODE_ENV: ${QUADRATIC_API_NODE_ENV}
+      DATABASE_URL: ${DATABASE_DSN}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      SLACK_FEEDBACK_URL: ${SLACK_FEEDBACK_URL}
+      BILLING_AI_USAGE_LIMIT: ${BILLING_AI_USAGE_LIMIT}
+      GCP_REGION: ${GCP_REGION}
+      GCP_REGION_ANTHROPIC: ${GCP_REGION_ANTHROPIC}
+      GCP_PROJECT_ID: ${GCP_PROJECT_ID}
+      GCP_CLIENT_EMAIL: ${GCP_CLIENT_EMAIL}
+      GCP_PRIVATE_KEY: ${GCP_PRIVATE_KEY}
+      GCP_GEMINI_API_KEY: ${GCP_GEMINI_API_KEY}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      XAI_API_KEY: ${XAI_API_KEY}
+      EXA_API_KEY: ${EXA_API_KEY}
+      AWS_S3_REGION: ${AWS_S3_REGION}
+      AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME}
+      AWS_S3_ACCESS_KEY_ID: ${AWS_S3_ACCESS_KEY_ID}
+      AWS_S3_SECRET_ACCESS_KEY: ${AWS_S3_SECRET_ACCESS_KEY}
       M2M_AUTH_TOKEN: ${M2M_AUTH_TOKEN}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
       AUTH_TYPE: ${AUTH_TYPE}
+      AUTH0_JWKS_URI: ${JWKS_URI}
+      AUTH0_ISSUER: ${AUTH0_ISSUER}
+      AUTH0_DOMAIN: ${AUTH0_DOMAIN}
+      AUTH0_CLIENT_ID: ${AUTH0_CLIENT_ID}
+      AUTH0_CLIENT_SECRET: ${AUTH0_CLIENT_SECRET}
+      AUTH0_AUDIENCE: ${AUTH0_AUDIENCE}
       ORY_JWKS_URI: ${JWKS_URI}
       ORY_ADMIN_HOST: ${ORY_ADMIN_HOST}
       STORAGE_TYPE: ${STORAGE_TYPE}
       QUADRATIC_FILE_URI: ${QUADRATIC_FILES_URL_INTERNAL}
       QUADRATIC_FILE_URI_PUBLIC: ${QUADRATIC_FILES_URL_EXTERNAL}
       LICENSE_KEY: ${LICENSE_KEY}
+      CONNECTION_DEMO: ${CONNECTION_DEMO}
     restart: "always"
     ports:
       - "8000:8000"
@@ -108,6 +148,7 @@ services:
       postgres:
         condition: service_healthy
     profiles:
+      - quadratic
       - quadratic_api
     networks:
       - host
@@ -115,13 +156,14 @@ services:
       - "host.docker.internal:host-gateway"
 
   quadratic-multiplayer:
-    image: public.ecr.aws/z7e3d4w1/quadratic-multiplayer:latest
+    image: ${ECR_URL}/quadratic-multiplayer:${IMAGE_TAG}
+    container_name: multiplayer
     environment:
-      RUST_LOG: info
-      HOST: 0.0.0.0
-      PORT: 3001
-      HEARTBEAT_CHECK_S: 3
-      HEARTBEAT_TIMEOUT_S: 600
+      RUST_LOG: ${QUADRATIC_MULTIPLAYER_RUST_LOG}
+      HOST: ${QUADRATIC_MULTIPLAYER_HOST}
+      PORT: ${QUADRATIC_MULTIPLAYER_PORT}
+      HEARTBEAT_CHECK_S: ${QUADRATIC_MULTIPLAYER_HEARTBEAT_CHECK_S}
+      HEARTBEAT_TIMEOUT_S: ${QUADRATIC_MULTIPLAYER_HEARTBEAT_TIMEOUT_S}
       QUADRATIC_API_URI: ${QUADRATIC_API_URL_INTERNAL}
       M2M_AUTH_TOKEN: ${M2M_AUTH_TOKEN}
       ENVIRONMENT: ${ENVIRONMENT}
@@ -135,15 +177,14 @@ services:
     ports:
       - "3001:3001"
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
+        condition: service_healthy
+      quadratic-client:
         condition: service_healthy
       quadratic-api:
         condition: service_started
-      quadratic-client:
-        condition: service_healthy
     profiles:
+      - quadratic
       - quadratic_multiplayer
     networks:
       - host
@@ -151,7 +192,8 @@ services:
       - "host.docker.internal:host-gateway"
 
   quadratic-files:
-    image: public.ecr.aws/z7e3d4w1/quadratic-files:latest
+    image: ${ECR_URL}/quadratic-files:${IMAGE_TAG}
+    container_name: files
     environment:
       RUST_LOG: ${QUADRATIC_FILES_RUST_LOG}
       HOST: ${QUADRATIC_FILES_HOST}
@@ -179,18 +221,17 @@ services:
     restart: "always"
     ports:
       - "3002:3002"
+    volumes:
+      - ./docker/file-storage:/file-storage
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
+        condition: service_healthy
+      quadratic-client:
         condition: service_healthy
       quadratic-api:
         condition: service_started
-      quadratic-client:
-        condition: service_healthy
-    volumes:
-      - ./docker/file-storage:/file-storage
     profiles:
+      - quadratic
       - quadratic_files
     networks:
       - host
@@ -198,7 +239,8 @@ services:
       - "host.docker.internal:host-gateway"
 
   quadratic-connection:
-    image: public.ecr.aws/z7e3d4w1/quadratic-connection:latest
+    image: ${ECR_URL}/quadratic-connection:${IMAGE_TAG}
+    container_name: connection
     environment:
       RUST_LOG: ${QUADRATIC_CONNECTION_RUST_LOG}
       HOST: ${QUADRATIC_CONNECTION_HOST}
@@ -214,18 +256,22 @@ services:
       - "3003:3003"
     depends_on:
       quadratic-client:
+        condition: service_healthy
+      quadratic-api:
         condition: service_started
     profiles:
+      - quadratic
       - quadratic_connection
     networks:
       - host
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-  # Auth Providers
+  # auth service - ory
 
   ory-auth:
     image: oryd/kratos:v1.2.0
+    container_name: ory-auth
     ports:
       - "4433:4433" # public
       - "4434:4434" # admin
@@ -248,6 +294,7 @@ services:
 
   ory-auth-migrate:
     image: oryd/kratos:v1.2.0
+    container_name: ory-auth-migrate
     command: migrate -c /etc/config/kratos/kratos.yml sql -e --yes
     volumes:
       - ./docker/ory-auth/config:/etc/config/kratos
@@ -265,6 +312,7 @@ services:
 
   ory-auth-node:
     image: oryd/kratos-selfservice-ui-node:v1.2.0
+    container_name: ory-auth-node
     ports:
       - "4455:4455"
     environment:
@@ -275,6 +323,8 @@ services:
       CSRF_COOKIE_NAME: ${KRATOS_CSRF_COOKIE_NAME}
       CSRF_COOKIE_SECRET: ${KRATOS_CSRF_COOKIE_SECRET}
     restart: on-failure
+    depends_on:
+      - ory-auth
     profiles:
       - ory
     networks:
@@ -291,6 +341,142 @@ services:
       - "8080:8080"
     profiles:
       - ory
+    networks:
+      - host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # databases to be used for testing by the connection service - postgres, mysql, mssql
+
+  postgres-connection:
+    image: postgres:15
+    restart: always
+    container_name: postgres-connection
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: postgres-connection
+      POSTGRES_USER: user
+      PGUSER: user
+      POSTGRES_PASSWORD: password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d postgres-connection"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./docker/postgres-connection/data:/var/lib/postgresql/data
+      - ./docker/postgres-connection/scripts:/docker-entrypoint-initdb.d
+    profiles:
+      - quadratic_connection_db
+      - quadratic_connection_db_postgres
+    networks:
+      - host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  ssh-postgres-connection:
+    build:
+      context: .
+      dockerfile: docker/ssh-postgres-connection/Dockerfile
+    restart: always
+    container_name: ssh-postgres-connection
+    ports:
+      - "2222:22"
+    environment:
+      POSTGRES_DB: ssh-postgres-connection
+      POSTGRES_USER: user
+      PGUSER: user
+      POSTGRES_PASSWORD: password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d ssh-postgres-connection"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ssh-postgres-connection-data:/var/lib/postgresql/data
+      - ./docker/postgres-connection/scripts:/docker-entrypoint-initdb.d
+    profiles:
+      - quadratic_connection_db
+      - quadratic_connection_db_postgres_ssh
+    networks:
+      - host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  mysql-connection:
+    image: mysql:8
+    restart: always
+    container_name: mysql-connection
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_DATABASE: mysql-connection
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./docker/mysql-connection/data:/var/lib/mysql
+      - ./docker/mysql-connection/scripts:/docker-entrypoint-initdb.d/
+    profiles:
+      - quadratic_connection_db
+      - quadratic_connection_db_mysql
+    networks:
+      - host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  ssh-mysql-connection:
+    build:
+      context: .
+      dockerfile: docker/ssh-mysql-connection/Dockerfile
+    restart: always
+    container_name: ssh-mysql-connection
+    ports:
+      - "2223:22"
+    environment:
+      MYSQL_DATABASE: mysql-connection
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: password
+    volumes:
+      - ./docker/mssql-connection/data:/var/opt/mssql
+      - ./docker/mssql-connection/scripts:/docker-entrypoint-initdb.d/
+    profiles:
+      - quadratic_connection_db
+      - quadratic_connection_db_mysql_ssh
+    networks:
+      - host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # This service covers non-ssh mssql connections as well since it's a complex build
+  ssh-mssql-connection:
+    build:
+      context: .
+      platforms:
+        - "linux/amd64"
+      dockerfile: docker/ssh-mssql-connection/Dockerfile
+    restart: always
+    container_name: ssh-mssql-connection
+    ports:
+      - "1433:1433"
+      - "2224:22"
+    environment:
+      MSSQL_SA_PASSWORD: yourStrong(!)Password
+      # MSSQL_PID: Evaluation
+    volumes:
+      - ./docker/ssh-mssql-connection/data:/var/opt/mssql
+      - ./docker/ssh-mssql-connection/scripts:/docker-entrypoint-initdb.d/
+    profiles:
+      - quadratic_connection_db
+      - quadratic_connection_db_mssql
+      - quadratic_connection_db_mssql_ssh
     networks:
       - host
     extra_hosts:

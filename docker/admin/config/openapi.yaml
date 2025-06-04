@@ -1,9 +1,9 @@
 openapi: 3.0.3
 info:
   title: My API
-  version: '1.0'
+  version: "1.0"
   x-logo:
-    url: ''
+    url: ""
 paths:
   /license/{licenseKey}:
     post:
@@ -19,7 +19,7 @@ paths:
             type: string
           x-last-modified: 1724376657454
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
@@ -32,7 +32,7 @@ paths:
                         type: number
                         example: 5
           x-last-modified: 1724376729775
-          description: ''
+          description: ""
           headers: {}
           links: {}
     x-last-modified: 1724376538356
