@@ -2,6 +2,7 @@
   "cSpell.words": [
     "awscli",
     "awscliv",
+    "BASETEN",
     "Caddyfile",
     "containerd",
     "dearmor",
@@ -24,6 +25,7 @@
     "totp",
     "usermod",
     "VITE",
+    "WORKOS",
     "xchacha"
   ]
 }
