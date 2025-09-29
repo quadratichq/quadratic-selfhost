@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Self-Hosting Initialization
+# Self-Hosting Initialization for Local Development
 # 
 # Usage:
 # 
-#   ./init-local.sh 83f0ebdf-eafb-4c8d-bd7b-04ea07d61b7f
+#   ./init-local-dev.sh 83f0ebdf-eafb-4c8d-bd7b-04ea07d61b7f
 
 REPO="https://github.com/quadratichq/quadratic-selfhost.git"
 SELF_HOSTING_URI="https://selfhost.quadratichq.com/"
