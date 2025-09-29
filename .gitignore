@@ -5,6 +5,8 @@ docker/mysql/data
 docker/postgres/data
 docker/redis/data
 
+quadratic-selfhost
+
 ENCRYPTION_KEY
 HOST
 LICENSE_KEY
