@@ -77,7 +77,7 @@ services:
       start_period: 10s
       interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 20
     restart: "always"
     volumes:
       - ./docker/client:/client
@@ -464,8 +464,8 @@ services:
   ssh-mssql-connection:
     build:
       context: .
-      platforms:
-        - "linux/amd64"
+      # platforms:
+      #   - "linux/amd64"
       dockerfile: docker/ssh-mssql-connection/Dockerfile
     restart: always
     container_name: ssh-mssql-connection
@@ -490,6 +490,7 @@ services:
 volumes:
   docker:
     name: docker
+  ssh-postgres-connection-data:
 
 networks:
   host:
