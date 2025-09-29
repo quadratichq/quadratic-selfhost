@@ -88,3 +88,11 @@ curl -sSf https://raw.githubusercontent.com/quadratichq/quadratic-selfhost/main/
 - Run the CloudFormation template and put in your license key and domain (or subdomain)
 - Once the Template runs, go to outputs and copy the InstancePublicIp
 - Create an `A` record `*.quadratic.example.com` where you prefix `*.` with the domain you configured Quadratic with.
+
+## Local Development
+
+When testing out change in local code and wanting to bypass Github raw content pulls:
+
+```shell
+./init-local-dev.sh
+```
