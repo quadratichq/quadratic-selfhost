@@ -220,6 +220,7 @@ services:
       - "3002:3002"
     volumes:
       - ./docker/file-storage:/file-storage
+      - ./docker/file-storage-synced-data:/file-storage-synced-data
     depends_on:
       redis:
         condition: service_healthy
