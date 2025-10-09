@@ -18,6 +18,11 @@ connection.#HOST# {
   reverse_proxy http://host.docker.internal:3003
 }
 
+cloud-controller.#HOST# {
+  reverse_proxy http://host.docker.internal:3004
+  reverse_proxy http://host.docker.internal:3005
+}
+
 ory.#HOST# {
   reverse_proxy http://host.docker.internal:4433
 }
