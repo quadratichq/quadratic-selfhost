@@ -298,10 +298,12 @@ services:
       PUBSUB_HOST: ${PUBSUB_HOST}
       PUBSUB_PORT: ${PUBSUB_PORT}
       PUBSUB_PASSWORD: ${PUBSUB_PASSWORD}
-    restart: "no"
+    restart: "always"
     ports:
       - "3004:3004"
       - "3005:3005"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       redis:
         condition: service_healthy
