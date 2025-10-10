@@ -275,8 +275,9 @@ services:
       - "host.docker.internal:host-gateway"
 
   quadratic-cloud-controller:
-    image: ${QUADRATIC_CLOUD_CONTROLLER_IMAGE:-hello-world}
+    image: ${ECR_URL}/quadratic-cloud-controller:${IMAGE_TAG}
     container_name: cloud-controller
+    pull_policy: missing
     environment:
       RUST_LOG: ${QUADRATIC_CLOUD_CONTROLLER_RUST_LOG}
       ENVIRONMENT: ${ENVIRONMENT}
