@@ -21,12 +21,11 @@ start() {
     docker tag hello-world "$CLOUD_CONTROLLER_IMAGE"
   fi
 
-  # Now pull all other images
-  echo "Pulling remaining images..."
-  docker compose $PROFILE pull --ignore-pull-failures
-
-  # Start services with new images in detached mode
-  docker compose $PROFILE up -d
+  # Since we removed all images above, we need to pull them back
+  # But skip the explicit pull and let 'docker compose up' handle it
+  # The pull_policy: missing setting will prevent pulling the cloud controller if it exists locally
+  echo "Starting services (will pull missing images automatically)..."
+  docker compose $PROFILE up -d --pull missing
 
   # Clear builder cache to avoid using old images and save space
   docker builder prune -af
