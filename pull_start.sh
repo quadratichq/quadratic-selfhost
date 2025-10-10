@@ -7,25 +7,27 @@
 PROFILE=$(cat PROFILE)
 
 start() {
+  # Load environment variables from .env file
+  set -a
+  . ./.env
+  set +a
+
   # Stop containers, remove volumes and remove images
   docker compose $PROFILE down --volumes --remove-orphans --rmi all
 
-  # Create fallback for cloud controller BEFORE trying to pull
+  # Try to pull the cloud controller image, create fallback if it doesn't exist
   CLOUD_CONTROLLER_IMAGE="${ECR_URL}/quadratic-cloud-controller:${IMAGE_TAG}"
-  echo "Checking if cloud controller image exists: $CLOUD_CONTROLLER_IMAGE"
-  
-  # Try to pull just the cloud controller image to test if it exists
   if ! docker pull "$CLOUD_CONTROLLER_IMAGE" 2>/dev/null; then
-    echo "Cloud controller image not available in registry, using hello-world as fallback..."
+    echo "Cloud controller image not available, using hello-world as fallback"
     docker pull hello-world
     docker tag hello-world "$CLOUD_CONTROLLER_IMAGE"
   fi
 
-  # Since we removed all images above, we need to pull them back
-  # But skip the explicit pull and let 'docker compose up' handle it
-  # The pull_policy: missing setting will prevent pulling the cloud controller if it exists locally
-  echo "Starting services (will pull missing images automatically)..."
-  docker compose $PROFILE up -d --pull missing
+  # Pull other images
+  docker compose $PROFILE pull --ignore-pull-failures
+
+  # Start services with new images in detached mode
+  docker compose $PROFILE up -d
 
   # Clear builder cache to avoid using old images and save space
   docker builder prune -af
