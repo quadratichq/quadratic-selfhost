@@ -275,7 +275,7 @@ services:
       - "host.docker.internal:host-gateway"
 
   quadratic-cloud-controller:
-    image: ${ECR_URL}/quadratic-cloud-controller:${IMAGE_TAG}
+    image: ${QUADRATIC_CLOUD_CONTROLLER_IMAGE:-hello-world}
     container_name: cloud-controller
     environment:
       RUST_LOG: ${QUADRATIC_CLOUD_CONTROLLER_RUST_LOG}
@@ -297,7 +297,7 @@ services:
       PUBSUB_HOST: ${PUBSUB_HOST}
       PUBSUB_PORT: ${PUBSUB_PORT}
       PUBSUB_PASSWORD: ${PUBSUB_PASSWORD}
-    restart: "always"
+    restart: "no"
     ports:
       - "3004:3004"
       - "3005:3005"
