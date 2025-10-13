@@ -54,7 +54,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-  # quadratic services - client, api, multiplayer, files, connection
+  # quadratic services - client, api, multiplayer, files, cloud-controller, connection
 
   quadratic-client:
     image: ${ECR_URL}/quadratic-client:${IMAGE_TAG}
@@ -269,6 +269,49 @@ services:
     profiles:
       - quadratic
       - quadratic_connection
+    networks:
+      - host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  quadratic-cloud-controller:
+    image: ${ECR_URL}/quadratic-cloud-controller:${IMAGE_TAG}
+    container_name: cloud-controller
+    pull_policy: missing
+    environment:
+      RUST_LOG: ${QUADRATIC_CLOUD_CONTROLLER_RUST_LOG}
+      ENVIRONMENT: ${ENVIRONMENT}
+      PUBLIC_HOST: ${QUADRATIC_CLOUD_CONTROLLER_PUBLIC_HOST}
+      PUBLIC_PORT: ${QUADRATIC_CLOUD_CONTROLLER_PUBLIC_PORT}
+      WORKER_ONLY_HOST: ${QUADRATIC_CLOUD_CONTROLLER_WORKER_ONLY_HOST}
+      WORKER_ONLY_PORT: ${QUADRATIC_CLOUD_CONTROLLER_WORKER_ONLY_PORT}
+      WORKER_INTERNAL_HOST: ${QUADRATIC_CLOUD_CONTROLLER_WORKER_INTERNAL_HOST}
+      MULTIPLAYER_HOST: ${QUADRATIC_CLOUD_CONTROLLER_MULTIPLAYER_HOST}
+      MULTIPLAYER_PORT: ${QUADRATIC_CLOUD_CONTROLLER_MULTIPLAYER_PORT}
+      QUADRATIC_API_URI: ${QUADRATIC_API_URL_INTERNAL}
+      M2M_AUTH_TOKEN: ${M2M_AUTH_TOKEN}
+      JWT_ENCODING_KEY: ${QUADRATIC_CLOUD_CONTROLLER_JWT_ENCODING_KEY}
+      JWT_EXPIRATION_SECONDS: ${QUADRATIC_CLOUD_CONTROLLER_JWT_EXPIRATION_SECONDS}
+      JWKS: ${QUADRATIC_CLOUD_CONTROLLER_JWKS}
+      WORKER_JWT_EMAIL: ${QUADRATIC_CLOUD_CONTROLLER_WORKER_JWT_EMAIL}
+      NAMESPACE: ${QUADRATIC_CLOUD_CONTROLLER_NAMESPACE}
+      PUBSUB_HOST: ${PUBSUB_HOST}
+      PUBSUB_PORT: ${PUBSUB_PORT}
+      PUBSUB_PASSWORD: ${PUBSUB_PASSWORD}
+    restart: "always"
+    ports:
+      - "3004:3004"
+      - "3005:3005"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      redis:
+        condition: service_healthy
+      quadratic-api:
+        condition: service_started
+    profiles:
+      - quadratic
+      - quadratic_cloud_controller
     networks:
       - host
     extra_hosts:
