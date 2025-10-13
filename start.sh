@@ -14,13 +14,13 @@ start() {
 
   # Check if cloud controller image exists locally, if not create a fallback
   CLOUD_CONTROLLER_IMAGE="${ECR_URL}/quadratic-cloud-controller:${IMAGE_TAG}"
-  CLOUE_WORKER_IMAGE="${ECR_URL}/quadratic-cloud-worker:${IMAGE_TAG}"
+  CLOUD_WORKER_IMAGE="${ECR_URL}/quadratic-cloud-worker:${IMAGE_TAG}"
   if ! docker pull "$CLOUD_CONTROLLER_IMAGE" 2>/dev/null; then
     echo "Cloud controller image not available locally, using hello-world as fallback"
     docker pull hello-world
     docker tag hello-world "$CLOUD_CONTROLLER_IMAGE"
   else
-    docker pull "$CLOUE_WORKER_IMAGE"
+    docker pull "$CLOUD_WORKER_IMAGE"
   fi
 
   # Start services with new images in detached mode
