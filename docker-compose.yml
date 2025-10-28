@@ -260,7 +260,7 @@ services:
     ports:
       - "3003:3003"
     volumes:
-      - ./docker/file-storage-synced-data:/file-storage-synced-data
+      - ./docker/file-storage:/file-storage
     depends_on:
       quadratic-client:
         condition: service_healthy
