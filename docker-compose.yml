@@ -57,6 +57,7 @@ services:
   # quadratic services - client, api, multiplayer, files, cloud-controller, connection
 
   quadratic-client:
+    platform: linux/amd64
     image: ${ECR_URL}/quadratic-client:${IMAGE_TAG}
     container_name: client
     environment:
@@ -95,6 +96,7 @@ services:
       - "host.docker.internal:host-gateway"
 
   quadratic-api:
+    platform: linux/amd64
     image: ${ECR_URL}/quadratic-api:${IMAGE_TAG}
     container_name: api
     environment:
@@ -154,6 +156,7 @@ services:
       - "host.docker.internal:host-gateway"
 
   quadratic-multiplayer:
+    platform: linux/amd64
     image: ${ECR_URL}/quadratic-multiplayer:${IMAGE_TAG}
     container_name: multiplayer
     environment:
@@ -190,6 +193,7 @@ services:
       - "host.docker.internal:host-gateway"
 
   quadratic-files:
+    platform: linux/amd64
     image: ${ECR_URL}/quadratic-files:${IMAGE_TAG}
     container_name: files
     environment:
@@ -212,15 +216,18 @@ services:
       STORAGE_TYPE: ${STORAGE_TYPE}
       AWS_S3_REGION: ${AWS_S3_REGION}
       AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME}
+      AWS_S3_BUCKET_NAME_SYNCED_DATA: ${AWS_S3_BUCKET_NAME_SYNCED_DATA}
       AWS_S3_ACCESS_KEY_ID: ${AWS_S3_ACCESS_KEY_ID}
       AWS_S3_SECRET_ACCESS_KEY: ${AWS_S3_SECRET_ACCESS_KEY}
       STORAGE_DIR: ${STORAGE_DIR}
+      STORAGE_DIR_SYNCED_DATA: ${STORAGE_DIR_SYNCED_DATA}
       STORAGE_ENCRYPTION_KEYS: ${ENCRYPTION_KEY}
     restart: "always"
     ports:
       - "3002:3002"
     volumes:
       - ./docker/file-storage:/file-storage
+      - ./docker/synced-data:/synced-data
     depends_on:
       redis:
         condition: service_healthy
@@ -237,6 +244,7 @@ services:
       - "host.docker.internal:host-gateway"
 
   quadratic-connection:
+    platform: linux/amd64
     image: ${ECR_URL}/quadratic-connection:${IMAGE_TAG}
     container_name: connection
     environment:
@@ -252,15 +260,18 @@ services:
       STORAGE_TYPE: ${STORAGE_TYPE}
       AWS_S3_REGION: ${AWS_S3_REGION}
       AWS_S3_BUCKET_NAME: ${QUADRATIC_CONNECTION_AWS_S3_BUCKET_NAME}
+      AWS_S3_BUCKET_NAME_SYNCED_DATA: ${AWS_S3_BUCKET_NAME_SYNCED_DATA}
       AWS_S3_ACCESS_KEY_ID: ${AWS_S3_ACCESS_KEY_ID}
       AWS_S3_SECRET_ACCESS_KEY: ${AWS_S3_SECRET_ACCESS_KEY}
       STORAGE_DIR: ${QUADRATIC_CONNECTION_STORAGE_DIR}
+      STORAGE_DIR_SYNCED_DATA: ${STORAGE_DIR_SYNCED_DATA}
       STORAGE_ENCRYPTION_KEYS: ${ENCRYPTION_KEY}
     restart: "always"
     ports:
       - "3003:3003"
     volumes:
       - ./docker/file-storage:/file-storage
+      - ./docker/synced-data:/synced-data
     depends_on:
       quadratic-client:
         condition: service_healthy
@@ -275,6 +286,7 @@ services:
       - "host.docker.internal:host-gateway"
 
   quadratic-cloud-controller:
+    platform: linux/amd64
     image: ${ECR_URL}/quadratic-cloud-controller:${IMAGE_TAG}
     container_name: cloud-controller
     pull_policy: missing
@@ -385,6 +397,7 @@ services:
       - "host.docker.internal:host-gateway"
 
   ory-auth-mail:
+    platform: linux/amd64
     image: oryd/mailslurper:latest-smtps
     ports:
       - "1025:1025"
@@ -457,6 +470,7 @@ services:
       - "host.docker.internal:host-gateway"
 
   mysql-connection:
+    platform: linux/amd64
     image: mysql:8
     restart: always
     container_name: mysql-connection
@@ -484,6 +498,7 @@ services:
       - "host.docker.internal:host-gateway"
 
   ssh-mysql-connection:
+    platform: linux/amd64
     build:
       context: .
       dockerfile: docker/ssh-mysql-connection/Dockerfile
@@ -509,10 +524,9 @@ services:
 
   # This service covers non-ssh mssql connections as well since it's a complex build
   ssh-mssql-connection:
+    platform: linux/amd64
     build:
       context: .
-      # platforms:
-      #   - "linux/amd64"
       dockerfile: docker/ssh-mssql-connection/Dockerfile
     restart: always
     container_name: ssh-mssql-connection
