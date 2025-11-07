@@ -96,3 +96,13 @@ When testing out change in local code and wanting to bypass Github raw content p
 ```shell
 ./init-local-dev.sh
 ```
+
+## Pulling Individual Images
+
+To manually pull individual images from ECR:
+
+```shell
+docker pull --platform linux/amd64 public.ecr.aws/z7e3d4w1/quadratic-client:latest
+```
+
+Replace `quadratic-client` with the intended service and replace `latest` if you wish to install a specific version.
