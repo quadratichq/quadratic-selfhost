@@ -280,6 +280,7 @@ services:
       PLAID_CLIENT_ID: ${PLAID_CLIENT_ID}
       PLAID_SECRET: ${PLAID_SECRET}
       PLAID_ENVIRONMENT: ${PLAID_ENVIRONMENT}
+      INTRINIO_API_KEY: ${INTRINIO_API_KEY}
     restart: "always"
     ports:
       - "3003:3003"
