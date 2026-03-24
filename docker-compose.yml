@@ -69,6 +69,7 @@ services:
       VITE_ORY_HOST: ${KRATOS_URL_EXTERNAL}
       VITE_WORKOS_CLIENT_ID: ${WORKOS_CLIENT_ID}
       VITE_GOOGLE_PICKER_API_KEY: ${GOOGLE_PICKER_API_KEY}
+      VITE_GOOGLE_APP_ID: ${GOOGLE_APP_ID}
     ports:
       - "3000:80"
     entrypoint: []
