@@ -54,7 +54,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-  # quadratic services - client, api, multiplayer, files, cloud-controller, connection
+  # quadratic services - client, api, multiplayer, files, cloud-controller, connection, mcp-server
 
   quadratic-client:
     platform: linux/amd64
@@ -364,6 +364,36 @@ services:
     profiles:
       - quadratic
       - quadratic_cloud_controller
+    networks:
+      - host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  quadratic-mcp-server:
+    platform: linux/amd64
+    image: ${ECR_URL}/quadratic-mcp-server:${IMAGE_TAG}
+    container_name: mcp-server
+    environment:
+      RUST_LOG: ${QUADRATIC_MCP_SERVER_RUST_LOG}
+      HOST: ${QUADRATIC_MCP_SERVER_HOST}
+      PORT: ${QUADRATIC_MCP_SERVER_PORT}
+      ENVIRONMENT: ${ENVIRONMENT}
+      QUADRATIC_API_URI: ${QUADRATIC_API_URL_INTERNAL}
+      M2M_AUTH_TOKEN: ${M2M_AUTH_TOKEN}
+      JWKS_URI: ${JWKS_URI}
+      QUADRATIC_JWKS: ${QUADRATIC_JWKS}
+      QUADRATIC_JWT_ENCODING_KEY: ${QUADRATIC_JWT_ENCODING_KEY}
+      QUADRATIC_JWT_EXPIRATION_SECONDS: ${QUADRATIC_JWT_EXPIRATION_SECONDS}
+      CLOUD_CONTROLLER_URI: ${QUADRATIC_CLOUD_CONTROLLER_URL_INTERNAL}
+    restart: "always"
+    ports:
+      - "8090:8090"
+    depends_on:
+      quadratic-api:
+        condition: service_started
+    profiles:
+      - quadratic
+      - quadratic_mcp_server
     networks:
       - host
     extra_hosts:

@@ -23,6 +23,14 @@ start() {
     docker pull "$CLOUD_WORKER_IMAGE"
   fi
 
+  # Check if MCP server image exists locally, if not create a fallback
+  MCP_SERVER_IMAGE="${ECR_URL}/quadratic-mcp-server:${IMAGE_TAG}"
+  if ! docker pull "$MCP_SERVER_IMAGE" 2>/dev/null; then
+    echo "MCP server image not available locally, using hello-world as fallback"
+    docker pull hello-world
+    docker tag hello-world "$MCP_SERVER_IMAGE"
+  fi
+
   # Start services with new images in detached mode
   docker compose $PROFILE up -d
 
