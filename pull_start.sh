@@ -26,6 +26,14 @@ start() {
     docker pull "$CLOUD_WORKER_IMAGE"
   fi
 
+  # Try to pull the MCP server image, create fallback if it doesn't exist
+  MCP_SERVER_IMAGE="${ECR_URL}/quadratic-mcp-server:${IMAGE_TAG}"
+  if ! docker pull "$MCP_SERVER_IMAGE" 2>/dev/null; then
+    echo "MCP server image not available, using hello-world as fallback"
+    docker pull hello-world
+    docker tag hello-world "$MCP_SERVER_IMAGE"
+  fi
+
   # Pull other images
   docker compose $PROFILE pull --ignore-pull-failures
 

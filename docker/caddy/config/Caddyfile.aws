@@ -23,6 +23,10 @@ cloud-controller.#HOST# {
   reverse_proxy http://host.docker.internal:3005
 }
 
+mcp.#HOST# {
+  reverse_proxy http://host.docker.internal:8090
+}
+
 ory.#HOST# {
   reverse_proxy http://host.docker.internal:4433
 }
