@@ -17,7 +17,10 @@ services:
       - pubsub
 
   postgres:
-    image: postgres:15
+    # pgvector image bundles the `vector` extension required by the Knowledge
+    # migration's `CREATE EXTENSION vector`. It is a drop-in superset of the
+    # official postgres image at the same major version.
+    image: pgvector/pgvector:pg17
     container_name: postgres
     restart: always
     ports:
