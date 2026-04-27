@@ -43,6 +43,18 @@ Once the Quadratic is initialized, a single command is needed to start all of th
 ./start.sh
 ```
 
+## Upgrading
+
+The bundled Postgres was upgraded from 15 to 17 to enable [pgvector](https://github.com/pgvector/pgvector) (required by the Knowledge / memory feature). Existing installs must wipe their Postgres data directory before the first start on the new image — pg17 cannot read pg15's on-disk format. Run:
+
+```shell
+./stop.sh
+rm -rf ./docker/postgres/data
+./start.sh
+```
+
+This deletes local Quadratic app data (teams, file metadata, knowledge rows, kratos identities). File blobs in `./docker/file-storage` are unaffected, but their DB references will be gone, so plan for a fresh start or take a `pg_dump` first if you need to migrate data.
+
 ## Stopping
 
 To stop running docker images, simply press `ctrl + c` if running in the foreground.
