@@ -34,6 +34,14 @@ start() {
     docker tag hello-world "$MCP_SERVER_IMAGE"
   fi
 
+  # Try to pull the developer API image, create fallback if it doesn't exist
+  DEVELOPER_API_IMAGE="${ECR_URL}/quadratic-developer-api:${IMAGE_TAG}"
+  if ! docker pull "$DEVELOPER_API_IMAGE" 2>/dev/null; then
+    echo "Developer API image not available, using hello-world as fallback"
+    docker pull hello-world
+    docker tag hello-world "$DEVELOPER_API_IMAGE"
+  fi
+
   # Pull other images
   docker compose $PROFILE pull --ignore-pull-failures
 

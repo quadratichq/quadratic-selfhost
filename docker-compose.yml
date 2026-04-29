@@ -412,6 +412,55 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
+  quadratic-developer-api:
+    platform: linux/amd64
+    image: ${ECR_URL}/quadratic-developer-api:${IMAGE_TAG}
+    container_name: developer-api
+    environment:
+      RUST_LOG: ${QUADRATIC_DEVELOPER_API_RUST_LOG}
+      DEVELOPER_API_HOST: ${QUADRATIC_DEVELOPER_API_HOST}
+      DEVELOPER_API_PORT: ${QUADRATIC_DEVELOPER_API_PORT}
+      ENVIRONMENT: ${ENVIRONMENT}
+      QUADRATIC_API_URI: ${QUADRATIC_API_URL_INTERNAL}
+      M2M_AUTH_TOKEN: ${M2M_AUTH_TOKEN}
+      QUADRATIC_JWKS: ${QUADRATIC_JWKS}
+      QUADRATIC_JWT_ENCODING_KEY: ${QUADRATIC_JWT_ENCODING_KEY}
+      QUADRATIC_JWT_EXPIRATION_SECONDS: ${QUADRATIC_JWT_EXPIRATION_SECONDS}
+      MULTIPLAYER_HOST: ${QUADRATIC_DEVELOPER_API_MULTIPLAYER_HOST}
+      MULTIPLAYER_PORT: ${QUADRATIC_DEVELOPER_API_MULTIPLAYER_PORT}
+      CONNECTION_HOST: ${QUADRATIC_DEVELOPER_API_CONNECTION_HOST}
+      CONNECTION_PORT: ${QUADRATIC_DEVELOPER_API_CONNECTION_PORT}
+      WORKER_IMAGE: ${QUADRATIC_DEVELOPER_API_WORKER_IMAGE:-${ECR_URL}/quadratic-cloud-worker:${IMAGE_TAG}}
+      DEVELOPER_API_SESSION_IDLE_TTL_SECS: ${QUADRATIC_DEVELOPER_API_SESSION_IDLE_TTL_SECS}
+      DEVELOPER_API_SESSION_REAPER_INTERVAL_SECS: ${QUADRATIC_DEVELOPER_API_SESSION_REAPER_INTERVAL_SECS}
+      DATABASE_DSN: ${DATABASE_DSN}
+      DEVELOPER_API_DB_MAX_CONNECTIONS: ${QUADRATIC_DEVELOPER_API_DB_MAX_CONNECTIONS}
+      STORAGE_TYPE: ${STORAGE_TYPE}
+      AWS_S3_REGION: ${AWS_S3_REGION}
+      AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME}
+      AWS_S3_ACCESS_KEY_ID: ${AWS_S3_ACCESS_KEY_ID}
+      AWS_S3_SECRET_ACCESS_KEY: ${AWS_S3_SECRET_ACCESS_KEY}
+      STORAGE_DIR: ${STORAGE_DIR}
+      STORAGE_ENCRYPTION_KEYS: ${ENCRYPTION_KEY}
+    restart: "always"
+    ports:
+      - "3007:3007"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./docker/file-storage:/file-storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+      quadratic-api:
+        condition: service_started
+    profiles:
+      - quadratic
+      - quadratic_developer_api
+    networks:
+      - host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
   # auth service - ory
 
   ory-auth:
