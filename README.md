@@ -17,7 +17,7 @@ Implement the entire Quadratic stack outside of Quadratic. The use cases we curr
 
 - MacOS or Linux (not tested on Windows)
 - License Key (available at https://selfhost.quadratic-preview.com)
-- The following open ports: 80, 443, 3001, 3002, 3003, 4433, 4455, 8000, and 8090
+- The following open ports: 80, 443, 3001, 3002, 3003, 3007, 4433, 4455, 8000, and 8090
 
 ## Installation
 
@@ -71,7 +71,7 @@ If running in the background, run the `stop.sh` script:
 - Select the Ubuntu option
 - The minium size should be a t2.xlarge
 - Either create a new security group with `Allow HTTPS traffic from the internet` or `Allow HTTP traffic from the internet` (not using certs) OR select an existing security group with this setting enabled
-  - Open ports 80, 443, 3001, 3002, 3003, 4433, 4455, 8000, and 8090 for TCP traffic with 0.0.0.0/0 source
+  - Open ports 80, 443, 3001, 3002, 3003, 3007, 4433, 4455, 8000, and 8090 for TCP traffic with 0.0.0.0/0 source
 - Configure storage to 30GiB
 - Click on the "Launch Instance" button
 

@@ -31,6 +31,14 @@ start() {
     docker tag hello-world "$MCP_SERVER_IMAGE"
   fi
 
+  # Check if developer API image exists locally, if not create a fallback
+  DEVELOPER_API_IMAGE="${ECR_URL}/quadratic-developer-api:${IMAGE_TAG}"
+  if ! docker pull "$DEVELOPER_API_IMAGE" 2>/dev/null; then
+    echo "Developer API image not available locally, using hello-world as fallback"
+    docker pull hello-world
+    docker tag hello-world "$DEVELOPER_API_IMAGE"
+  fi
+
   # Start services with new images in detached mode
   docker compose $PROFILE up -d
 

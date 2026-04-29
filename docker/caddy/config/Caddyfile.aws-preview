@@ -32,3 +32,7 @@ cloud-controller.#HOST# {
 mcp.#HOST# {
   reverse_proxy http://host.docker.internal:8090
 }
+
+developer-api.#HOST# {
+  reverse_proxy http://host.docker.internal:3007
+}
