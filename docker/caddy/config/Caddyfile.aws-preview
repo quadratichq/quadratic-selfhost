@@ -8,7 +8,7 @@
   reverse_proxy http://host.docker.internal:3000
 }
 
-api.#HOST# {
+api-aws.#HOST# {
   reverse_proxy http://host.docker.internal:8000
 }
 
