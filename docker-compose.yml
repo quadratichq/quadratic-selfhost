@@ -57,7 +57,8 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-  # quadratic services - client, api, multiplayer, files, cloud-controller, connection, mcp-server
+  # quadratic services - client, api, session (replaces multiplayer/files on
+  # this branch), cloud-controller, connection, mcp-server
 
   quadratic-client:
     platform: linux/amd64
@@ -67,6 +68,7 @@ services:
       VITE_DEBUG: 1
       VITE_QUADRATIC_API_URL: ${QUADRATIC_API_URL_EXTERNAL}
       VITE_QUADRATIC_MULTIPLAYER_URL: ${QUADRATIC_MULTIPLAYER_URL_EXTERNAL}
+      VITE_QUADRATIC_SESSION_URL: ${QUADRATIC_SESSION_URL_EXTERNAL}
       VITE_QUADRATIC_CONNECTION_URL: ${QUADRATIC_CONNECTION_URL_EXTERNAL}
       VITE_AUTH_TYPE: ${AUTH_TYPE}
       VITE_ORY_HOST: ${KRATOS_URL_EXTERNAL}
@@ -207,7 +209,8 @@ services:
       quadratic-api:
         condition: service_started
     profiles:
-      - quadratic
+      # cloud-session branch: multiplayer is replaced by quadratic-session;
+      # only starts when its dedicated profile is explicitly enabled.
       - quadratic_multiplayer
     networks:
       - host
@@ -263,8 +266,70 @@ services:
       quadratic-api:
         condition: service_started
     profiles:
-      - quadratic
+      # cloud-session branch: files is replaced by quadratic-session (which
+      # serves the same storage routes); dedicated profile only.
       - quadratic_files
+    networks:
+      - host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  quadratic-session:
+    platform: linux/amd64
+    image: ${ECR_URL}/quadratic-session:${IMAGE_TAG}
+    container_name: session
+    environment:
+      RUST_LOG: ${QUADRATIC_SESSION_RUST_LOG}
+      SESSION__HOST: ${QUADRATIC_SESSION_HOST}
+      SESSION__PORT: ${QUADRATIC_SESSION_PORT}
+      # "development", not ${ENVIRONMENT}: local/docker hardcode the Rust S3
+      # client to the localstack endpoint (quadratic-rust-shared aws::client).
+      SESSION__ENVIRONMENT: development
+      SESSION__AUTHENTICATE_JWT: "true"
+      SESSION__JWKS_URI: ${JWKS_URI}
+      SESSION__QUADRATIC_JWKS: ${QUADRATIC_JWKS}
+      SESSION__QUADRATIC_API_URI: ${QUADRATIC_API_URL_INTERNAL}
+      SESSION__M2M_AUTH_TOKEN: ${M2M_AUTH_TOKEN}
+      # Cloud workers run in Daytona sandboxes built from the snapshot below
+      # (published by CI's docker-to-daytona step).
+      SESSION__WORKER_BACKEND: daytona
+      SESSION__DAYTONA_API_URL: ${QUADRATIC_SESSION_DAYTONA_API_URL}
+      SESSION__DAYTONA_API_KEY: ${DAYTONA_API_KEY}
+      SESSION__DAYTONA_SNAPSHOT: ${QUADRATIC_SESSION_DAYTONA_SNAPSHOT}
+      SESSION__WORKER_READY_TIMEOUT_S: ${QUADRATIC_SESSION_WORKER_READY_TIMEOUT_S}
+      # Storage (files-service parity: session serves the same /storage
+      # routes, so files.#HOST# now points here).
+      SESSION__STORAGE_TYPE: ${STORAGE_TYPE}
+      SESSION__STORAGE_DIR: ${STORAGE_DIR}
+      SESSION__SYNCED_DATA_STORAGE_DIR: ${SYNCED_DATA_STORAGE_DIR}
+      SESSION__STORAGE_ENCRYPTION_KEYS: ${ENCRYPTION_KEY}
+      SESSION__AWS_S3_REGION: ${AWS_S3_REGION}
+      SESSION__AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME}
+      SESSION__AWS_S3_SYNCED_DATA_BUCKET_NAME: ${AWS_S3_SYNCED_DATA_BUCKET_NAME}
+      SESSION__AWS_S3_ACCESS_KEY_ID: ${AWS_S3_ACCESS_KEY_ID}
+      SESSION__AWS_S3_SECRET_ACCESS_KEY: ${AWS_S3_SECRET_ACCESS_KEY}
+      # Journal for crash recovery between checkpoints.
+      SESSION__JOURNAL: file-system
+      SESSION__JOURNAL_DIR: /journal
+      # Synced connections (ported from quadratic-files).
+      SESSION__PLAID_CLIENT_ID: ${PLAID_CLIENT_ID}
+      SESSION__PLAID_SECRET: ${PLAID_SECRET}
+      SESSION__PLAID_ENVIRONMENT: ${PLAID_ENVIRONMENT}
+    restart: "always"
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./docker/file-storage:/file-storage
+      - ./docker/synced-data:/synced-data
+      - ./docker/session-journal:/journal
+    depends_on:
+      quadratic-client:
+        condition: service_healthy
+      quadratic-api:
+        condition: service_started
+    profiles:
+      - quadratic
+      - quadratic_session
     networks:
       - host
     extra_hosts:
