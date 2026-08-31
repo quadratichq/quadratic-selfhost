@@ -16,8 +16,14 @@ multiplayer.#HOST# {
   reverse_proxy http://host.docker.internal:3001
 }
 
+session.#HOST# {
+  reverse_proxy http://host.docker.internal:3001
+}
+
+# cloud-session branch: quadratic-session serves the files-service storage
+# routes, so presigned URLs minted by quadratic-api keep working.
 files.#HOST# {
-  reverse_proxy http://host.docker.internal:3002
+  reverse_proxy http://host.docker.internal:3001
 }
 
 connection.#HOST# {
