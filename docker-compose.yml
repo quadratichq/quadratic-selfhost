@@ -290,12 +290,18 @@ services:
       SESSION__QUADRATIC_JWKS: ${QUADRATIC_JWKS}
       SESSION__QUADRATIC_API_URI: ${QUADRATIC_API_URL_INTERNAL}
       SESSION__M2M_AUTH_TOKEN: ${M2M_AUTH_TOKEN}
-      # Cloud workers run in Daytona sandboxes built from the snapshot below
-      # (published by CI's docker-to-daytona step).
+      # Cloud workers run in Daytona sandboxes built from CI-published
+      # snapshots. Names are content-addressed
+      # (quadratic-cloud-worker-<scope>-<hash>): set the PREFIX to track
+      # the newest active version at worker spawn (no re-pinning on worker
+      # changes), or pin the exact NAME for deterministic deploys — the
+      # exact name wins when both are set. Empty values are treated as
+      # unset by the service.
       SESSION__WORKER_BACKEND: daytona
       SESSION__DAYTONA_API_URL: ${QUADRATIC_SESSION_DAYTONA_API_URL}
       SESSION__DAYTONA_API_KEY: ${DAYTONA_API_KEY}
-      SESSION__DAYTONA_SNAPSHOT: ${QUADRATIC_SESSION_DAYTONA_SNAPSHOT}
+      SESSION__DAYTONA_SNAPSHOT: ${QUADRATIC_SESSION_DAYTONA_SNAPSHOT:-}
+      SESSION__DAYTONA_SNAPSHOT_PREFIX: ${QUADRATIC_SESSION_DAYTONA_SNAPSHOT_PREFIX:-}
       SESSION__WORKER_READY_TIMEOUT_S: ${QUADRATIC_SESSION_WORKER_READY_TIMEOUT_S}
       # Storage (files-service parity: session serves the same /storage
       # routes, so files.#HOST# now points here).
@@ -316,6 +322,11 @@ services:
       SESSION__PLAID_SECRET: ${PLAID_SECRET}
       SESSION__PLAID_ENVIRONMENT: ${PLAID_ENVIRONMENT}
     restart: "always"
+    # Deploy-time drain: on SIGTERM the service refuses new sessions,
+    # checkpoints every open file, and tears down its workers before
+    # exiting. Give it time — the compose default of 10s would SIGKILL
+    # mid-checkpoint (safe thanks to journal replay, but wasteful).
+    stop_grace_period: 150s
     ports:
       - "3001:3001"
     volumes:
