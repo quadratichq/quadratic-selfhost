@@ -12,8 +12,13 @@ start() {
   . ./.env
   set +a
 
-  # Stop containers, remove volumes and remove images
-  docker compose $PROFILE down --volumes --remove-orphans --rmi all
+  # Stop containers and remove volumes (previews want a fresh DB), but KEEP
+  # images: removing them (--rmi all) forced a ~6GB re-download of the whole
+  # stack every deploy, which outran the CI deploy wait on preview instances
+  # and left compose aborting with zero containers when one large pull
+  # failed. Layers that didn't change are reused; superseded images are
+  # pruned after the new stack is up.
+  docker compose $PROFILE down --volumes --remove-orphans
 
   # Try to pull the cloud controller image, create fallback if it doesn't exist
   CLOUD_CONTROLLER_IMAGE="${ECR_URL}/quadratic-cloud-controller:${IMAGE_TAG}"
@@ -42,13 +47,21 @@ start() {
     docker tag hello-world "$DEVELOPER_API_IMAGE"
   fi
 
-  # Pull other images
+  # Pull other images. --ignore-pull-failures tolerates optional services
+  # whose images are absent in this registry; `up` re-attempts those pulls
+  # below and aborts everything if a required one is really missing, so
+  # fail loudly there instead of leaving CI to poll a dead stack.
   docker compose $PROFILE pull --ignore-pull-failures
 
   # Start services with new images in detached mode
-  docker compose $PROFILE up -d
+  if ! docker compose $PROFILE up -d; then
+    echo "FATAL: docker compose up failed" >&2
+    exit 1
+  fi
 
-  # Clear builder cache to avoid using old images and save space
+  # Now that the new containers are running, drop superseded image
+  # versions and builder cache to keep preview disks bounded.
+  docker image prune -af
   docker builder prune -af
 }
 
