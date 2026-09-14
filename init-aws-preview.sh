@@ -24,8 +24,9 @@ PROFILE=""
 LICENSE_KEY=""
 HOST=""
 
-# Download and source utils.sh
-curl -sSf https://raw.githubusercontent.com/quadratichq/quadratic-selfhost/main/utils.sh -o utils.sh
+# Download and source utils.sh (cloud-session branch: pinned so checkout()
+# clones this branch; TEMP until merged into main)
+curl -sSf https://raw.githubusercontent.com/quadratichq/quadratic-selfhost/cloud-session/utils.sh -o utils.sh
 source ./utils.sh
 
 if [ -f "quadratic-selfhost/LICENSE_KEY" ]; then

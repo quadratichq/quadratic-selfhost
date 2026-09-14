@@ -19,9 +19,10 @@ get_host() {
 }
 
 checkout() {
-  git clone $REPO
+  # cloud-session branch: pin the clone to this branch so preview instances
+  # bootstrapped from it stay on it (TEMP until merged).
+  git clone -b cloud-session $REPO
   cd quadratic-selfhost
-  git checkout
 }
 
 parse_profile() {
@@ -41,6 +42,7 @@ parse_profile() {
     "QUADRATIC_API_IN_DOCKER_COMPOSE"
     "QUADRATIC_MULTIPLAYER_IN_DOCKER_COMPOSE"
     "QUADRATIC_FILES_IN_DOCKER_COMPOSE"
+    "QUADRATIC_SESSION_IN_DOCKER_COMPOSE"
     "QUADRATIC_CLOUD_CONTROLLER_IN_DOCKER_COMPOSE"
     "QUADRATIC_MCP_SERVER_IN_DOCKER_COMPOSE"
     "QUADRATIC_DEVELOPER_API_IN_DOCKER_COMPOSE"
